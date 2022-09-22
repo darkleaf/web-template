@@ -26,12 +26,24 @@
     '[div (:name)]
     {:name "a"}
 
-
     "<div><div>a</div><div>b</div></div>"
     '[div (:users
            [div (:login)])]
     {:users [{:login "a"}
-             {:login "b"}]}))
+             {:login "b"}]}
+
+    "<div>a</div>"
+    '[div (:active?
+           (:login))]
+    {:active? true
+     :login "a"}
+
+    "a"
+    '(:user
+      (:login))
+    {:user {:login "a"}}))
+
+
 
 
 
@@ -39,3 +51,7 @@
 '[div {(:attr) true}]
 '[div (:attrs)]
 '[div (:names (.) "no names")]
+
+
+'[div (:attrs each [div] empty [div ...])]
+'[div (:attrs :each [div] :empty [div ...])]

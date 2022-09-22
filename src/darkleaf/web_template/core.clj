@@ -11,8 +11,17 @@
   [tag & body]
   [tag attributes & body])
 
-(defprotocol DynamicNode
-  (to-writer [this args]))
+;; appendable :: (fn [^Writer w])
+;; tmpl :: data -> appendable
+
+
+(defprotocol Section
+  (to-appendable [this ctx block-tmpl inverted-block-tmpl]))
+
+(defn- nil-node [node]
+  (when (nil? node)
+    (fn [data]
+      (fn [^Writer w]))))
 
 (defn- string-node [node]
   (when (string? node)
@@ -39,11 +48,13 @@
           (.append w tag)
           (.append w ">"))))))
 
-(defn- dynamic-node [[key & args :as node]]
+(defn- dynamic-node [[key block inverted-block & other :as node]]
   (when (list? node)
-    (fn [data]
-      (let [data (get data key)]
-        (to-writer data args)))))
+    (let [block          (compile block)
+          inverted-block (compile inverted-block)]
+      (fn [data]
+        (let [value (get data key)]
+          (to-appendable value data block inverted-block))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
@@ -53,6 +64,7 @@
 
 (defn compile [node]
   (chain-handlers node
+    nil-node
     string-node
     dynamic-node
     static-tag--no-attrs--body))
@@ -69,19 +81,28 @@
     ""
     [div {}]])
 
-
-(extend-protocol DynamicNode
+(extend-protocol Section
   String
-  (to-writer [this _]
+  (to-appendable [this _ _ _]
     (fn [^Writer w]
       (.append w this)))
+
+  Boolean
+  (to-appendable [this parent-ctx block-tmpl inverted-block-tmpl]
+    (if this
+      (block-tmpl parent-ctx)
+      (inverted-block-tmpl parent-ctx)))
 
   ;; todo
   clojure.lang.PersistentVector
   ;; todo: empty
-  (to-writer [this [each-tmpl #_empty-tmpl]]
-    (let [each-tmpl (compile each-tmpl)
-          writers   (map each-tmpl this)]
+  (to-appendable [this parent-ctx block-tmpl inverted-block-tmpl]
+    ;; parent-ctx как раз можно в inverted передавать
+    (let [appendables (map block-tmpl this)]
       (fn [^Writer w]
-        (doseq [writer writers]
-          (writer w))))))
+        (doseq [appendable appendables]
+          (appendable w)))))
+
+  clojure.lang.PersistentArrayMap
+  (to-appendable [this parent-ctx block-tmpl inverted-block-tmpl]
+    (block-tmpl this)))
