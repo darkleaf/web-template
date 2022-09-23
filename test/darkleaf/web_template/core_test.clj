@@ -41,7 +41,13 @@
     "a"
     '(:user
       (:login))
-    {:user {:login "a"}}))
+    {:user {:login "a"}}
+
+    "ab"
+    '(. (.))
+
+    ["a" "b"]))
+
 
 
 
