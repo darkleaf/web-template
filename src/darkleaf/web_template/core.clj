@@ -7,17 +7,10 @@
 
 (declare compile)
 
-;; todo: naming
-(defn- new-ctx [v]
-  (assoc (if (map? v) v) '. v))
-
-(defn- get-ctx [ctx k]
-  (let [v    (get ctx k)
-        ctx' (new-ctx v)]
-    (merge ctx ctx')))
-
-(defn- add-ctx [ctx v]
-  (merge ctx (new-ctx v)))
+(defn- ctx-push [ctx v]
+  (merge ctx
+         (if (map? v) v)
+         {'. v}))
 
 (comment
   [tag & body]
@@ -67,7 +60,7 @@
           inverted-block (compile inverted-block)]
       (fn [ctx]
         (let [value (get ctx key)
-              ctx   (get-ctx ctx key)]
+              ctx   (ctx-push ctx value)]
           (to-appendable value ctx block inverted-block))))))
 
 (defmacro chain-handlers
@@ -87,7 +80,7 @@
 
 (defn render-to-string [template data]
   (let [sw  (StringWriter.)
-        ctx (new-ctx data)]
+        ctx (ctx-push nil data)]
     ((template ctx) sw)
     (.toString sw)))
 
@@ -114,7 +107,7 @@
   (to-appendable [this ctx block-tmpl inverted-block-tmpl]
     ;; parent-ctx как раз можно в inverted передавать
     (let [appendables (for [item this ;; оно ленивое
-                            :let [ctx (add-ctx ctx item)]]
+                            :let [ctx (ctx-push ctx item)]]
                         (block-tmpl ctx))]
       (fn [^Writer w]
         (doseq [appendable appendables]
