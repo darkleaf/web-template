@@ -16,23 +16,20 @@
   [tag & body]
   [tag attributes & body])
 
-;; appendable :: (fn [^Writer w])
-;; tmpl :: data -> appendable
+;; tmpl :: w data -> ()
 
 
 (defprotocol Section
-  (to-appendable [this ctx block-tmpl inverted-block-tmpl]))
+  (write [this ^Writer writer ctx block-tmpl inverted-block-tmpl]))
 
 (defn- nil-node [node]
   (when (nil? node)
-    (fn [ctx]
-      (fn [^Writer w]))))
+    (fn [_ _])))
 
 (defn- string-node [node]
   (when (string? node)
-    (fn [ctx]
-      (fn [^Writer w]
-        (.append w ^String node)))))
+    (fn [^Writer w ctx]
+      (.append w ^String node))))
 
 (defn- static-tag--no-attrs--body [[tag & body :as node]]
   (when (and (vector? node)
@@ -40,28 +37,26 @@
              (not (-> body first map?)))
     (let [tag  (name tag)
           body (map compile body)]
-      (fn [ctx]
-        (fn [^Writer w]
-          (.append w "<")
-          (.append w tag)
-          (.append w ">")
+      (fn [^Writer w ctx]
+        (.append w "<")
+        (.append w tag)
+        (.append w ">")
 
-          (doseq [item body]
-            ;; todo: fix
-            ((item ctx) w))
+        (doseq [item body]
+          (item w ctx))
 
-          (.append w "</")
-          (.append w tag)
-          (.append w ">"))))))
+        (.append w "</")
+        (.append w tag)
+        (.append w ">")))))
 
 (defn- dynamic-node [[key block inverted-block :as node]]
   (when (list? node)
     (let [block          (compile block)
           inverted-block (compile inverted-block)]
-      (fn [ctx]
+      (fn [w ctx]
         (let [value (get ctx key)
               ctx   (ctx-push ctx value)]
-          (to-appendable value ctx block inverted-block))))))
+          (write value w ctx block inverted-block))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
@@ -81,7 +76,7 @@
 (defn render-to-string [template data]
   (let [sw  (StringWriter.)
         ctx (ctx-push nil data)]
-    ((template ctx) sw)
+    (template sw ctx)
     (.toString sw)))
 
 (comment
@@ -91,28 +86,23 @@
 
 (extend-protocol Section
   String
-  (to-appendable [this _ _ _]
-    (fn [^Writer w]
-      (.append w this)))
+  (write [this ^Writer w _ _ _]
+    (.append w this))
 
   Boolean
-  (to-appendable [this ctx block-tmpl inverted-block-tmpl]
+  (write [this w ctx block-tmpl inverted-block-tmpl]
     (if this
-      (block-tmpl ctx)
-      (inverted-block-tmpl ctx)))
+      (block-tmpl w ctx)
+      (inverted-block-tmpl w ctx)))
 
   ;; todo
   clojure.lang.PersistentVector
   ;; todo: empty
-  (to-appendable [this ctx block-tmpl inverted-block-tmpl]
-    ;; parent-ctx как раз можно в inverted передавать
-    (let [appendables (for [item this ;; оно ленивое
-                            :let [ctx (ctx-push ctx item)]]
-                        (block-tmpl ctx))]
-      (fn [^Writer w]
-        (doseq [appendable appendables]
-          (appendable w)))))
+  (write [this w ctx block-tmpl inverted-block-tmpl]
+    (doseq [item this
+            :let [ctx (ctx-push ctx item)]]
+      (block-tmpl w ctx)))
 
   clojure.lang.PersistentArrayMap
-  (to-appendable [this ctx block-tmpl inverted-block-tmpl]
-    (block-tmpl ctx)))
+  (write [this w ctx block-tmpl inverted-block-tmpl]
+    (block-tmpl w ctx)))
