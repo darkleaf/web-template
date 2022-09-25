@@ -91,12 +91,8 @@
     (template sw ctx)
     (.toString sw)))
 
-(comment
-  '[div {}
-    ""
-    [div {}]])
-
 (extend-protocol Section
+  ;; todo: escape
   String
   (write [this ^Writer w ctx block-tmpl inverted-block-tmpl]
     (if-not (str/blank? this)
@@ -104,6 +100,8 @@
         (.append w this)
         (block-tmpl w ctx))
       (inverted-block-tmpl ctx)))
+
+  ;; todo: Numbers
 
   nil
   (write [_ w ctx _ inverted-block-tmpl]
@@ -115,6 +113,7 @@
       (block-tmpl w ctx)
       (inverted-block-tmpl w ctx)))
 
+  ;; todo: fix type
   clojure.lang.PersistentVector
   (write [this w ctx block-tmpl inverted-block-tmpl]
     (if (seq this)
@@ -123,6 +122,7 @@
         (block-tmpl w ctx))
       (inverted-block-tmpl w ctx)))
 
+  ;; todo: fix type
   clojure.lang.PersistentArrayMap
   (write [this w ctx block-tmpl inverted-block-tmpl]
     (if (seq this)
