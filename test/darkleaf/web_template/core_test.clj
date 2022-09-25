@@ -26,38 +26,57 @@
     '[div (:name)]
     {:name "a"}
 
-    "<div><div>a</div><div>b</div></div>"
-    '[div (:users
-           [div (:login)])]
+    "<div>a</div><div>b</div>"
+    '(:users
+      [div (:login)])
     {:users [{:login "a"}
              {:login "b"}]}
 
-    "<div>a</div>"
-    '[div (:active?
-           (:login))]
+    "a"
+    '(:active?
+      (:login))
     {:active? true
-     :login "a"}
+     :login   "a"}
+
+    "not active"
+    '(:active?
+      (:login)
+      "not active")
+    {:active? false}
 
     "a"
     '(:user
       (:login))
     {:user {:login "a"}}
 
+    "not found"
+    '(:user
+      (:login)
+      "not found")
+    {:user {}}
+
     "ab"
     '(. (.))
+    ["a" "b"]
 
-    ["a" "b"]))
+    "empty"
+    '(. (.) "empty")
+    []
 
+    "<div>cb*a*</div>"
+    '(:a (:b [div (:c) (:b*) (:a*)]))
+    {:a  {:b  {:c "c"}
+          :b* "b*"}
+     :a* "a*"}
 
-
-
+    "<div>a</div><div>b</div><div>c</div>"
+    '[<>
+      [div "a"]
+      [div "b"]
+      [div "c"]]
+    nil))
 
 
 '[div {class (:class)}]
 '[div {(:attr) true}]
 '[div (:attrs)]
-'[div (:names (.) "no names")]
-
-
-'[div (:attrs each [div] empty [div ...])]
-'[div (:attrs :each [div] :empty [div ...])]

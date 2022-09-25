@@ -1,5 +1,7 @@
 (ns darkleaf.web-template.core
   (:refer-clojure :exclude [compile])
+  (:require
+   [clojure.string :as str])
   (:import
    (java.io Writer StringWriter)))
 
@@ -22,14 +24,25 @@
 (defprotocol Section
   (write [this ^Writer writer ctx block-tmpl inverted-block-tmpl]))
 
+(defn- nil-tmpl [_ _])
+
 (defn- nil-node [node]
   (when (nil? node)
-    (fn [_ _])))
+    nil-tmpl))
+
 
 (defn- string-node [node]
   (when (string? node)
     (fn [^Writer w ctx]
       (.append w ^String node))))
+
+(defn- <>-node [[tag & body :as node]]
+  (when (and (vector? node)
+             (= '<> tag))
+    (let [body (map compile body)]
+      (fn [w ctx]
+        (doseq [item body]
+          (item w ctx))))))
 
 (defn- static-tag--no-attrs--body [[tag & body :as node]]
   (when (and (vector? node)
@@ -69,9 +82,8 @@
     nil-node
     string-node
     dynamic-node
+    <>-node
     static-tag--no-attrs--body))
-
-
 
 (defn render-to-string [template data]
   (let [sw  (StringWriter.)
@@ -86,8 +98,12 @@
 
 (extend-protocol Section
   String
-  (write [this ^Writer w _ _ _]
-    (.append w this))
+  (write [this ^Writer w ctx block-tmpl inverted-block-tmpl]
+    (if-not (str/blank? this)
+      (if (= nil-tmpl block-tmpl)
+        (.append w this)
+        (block-tmpl w ctx))
+      (inverted-block-tmpl ctx)))
 
   Boolean
   (write [this w ctx block-tmpl inverted-block-tmpl]
@@ -95,14 +111,16 @@
       (block-tmpl w ctx)
       (inverted-block-tmpl w ctx)))
 
-  ;; todo
   clojure.lang.PersistentVector
-  ;; todo: empty
   (write [this w ctx block-tmpl inverted-block-tmpl]
-    (doseq [item this
-            :let [ctx (ctx-push ctx item)]]
-      (block-tmpl w ctx)))
+    (if (seq this)
+      (doseq [item this
+              :let [ctx (ctx-push ctx item)]]
+        (block-tmpl w ctx))
+      (inverted-block-tmpl w ctx)))
 
   clojure.lang.PersistentArrayMap
   (write [this w ctx block-tmpl inverted-block-tmpl]
-    (block-tmpl w ctx)))
+    (if (seq this)
+      (block-tmpl w ctx)
+      (inverted-block-tmpl w ctx))))
