@@ -44,6 +44,12 @@
       "not active")
     {:active? false}
 
+    "not active"
+    '(:active?
+      (:login)
+      "not active")
+    {:active? nil}
+
     "a"
     '(:user
       (:login))

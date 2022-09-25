@@ -105,6 +105,10 @@
         (block-tmpl w ctx))
       (inverted-block-tmpl ctx)))
 
+  nil
+  (write [_ w ctx _ inverted-block-tmpl]
+    (inverted-block-tmpl w ctx))
+
   Boolean
   (write [this w ctx block-tmpl inverted-block-tmpl]
     (if this
