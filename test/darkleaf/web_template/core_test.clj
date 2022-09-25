@@ -86,3 +86,10 @@
 '[div {class (:class)}]
 '[div {(:attr) true}]
 '[div (:attrs)]
+'[div {data {foo "43"}}]
+
+
+'[.foo#bar {data {(:segment) {foo  (:x)
+                              (:y) "bar"
+                              "xyz" "42"
+                              "abc" ["a" "b" (:c)]}}}]
