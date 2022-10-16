@@ -25,11 +25,9 @@
   ;; todo: attrs (:foo {:class "foo"} (.) "not found"
   (write [this writer ctx attrs block-tmpl inverted-block-tmpl]))
 
-(defn- nil-tmpl [_ _])
-
 (defn- nil-node [node]
   (when (nil? node)
-    nil-tmpl))
+    (fn [_ _])))
 
 (declare dynamic-node)
 
