@@ -48,9 +48,10 @@
   (when (and (vector? node)
              (= '<> tag))
     (let [body (map compile body)]
-      (fn [w ctx]
+      (fn [^Writer w ctx]
         (doseq [item body]
-          (item w ctx))))))
+          (item w ctx)
+          (.append w " "))))))
 
 (defn- static-tag--no-attrs--body [[tag & body :as node]]
   (when (and (vector? node)

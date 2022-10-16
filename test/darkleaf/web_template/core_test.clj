@@ -190,7 +190,7 @@
      [div "a"]
      [div "b"]]
     nil
-    "<div>a</div><div>b</div>"
+    "<div>a</div> <div>b</div> "
 
     (.) ;; -> .
     "a"
