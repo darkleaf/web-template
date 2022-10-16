@@ -113,8 +113,7 @@
       (block-tmpl w ctx)
       (inverted-block-tmpl w ctx)))
 
-  ;; todo: fix type
-  clojure.lang.PersistentVector
+  clojure.lang.IPersistentVector
   (write [this w ctx block-tmpl inverted-block-tmpl]
     (if (seq this)
       (doseq [item this
@@ -122,8 +121,7 @@
         (block-tmpl w ctx))
       (inverted-block-tmpl w ctx)))
 
-  ;; todo: fix type
-  clojure.lang.PersistentArrayMap
+  clojure.lang.IPersistentMap
   (write [this w ctx block-tmpl inverted-block-tmpl]
     (if (seq this)
       (block-tmpl w ctx)
