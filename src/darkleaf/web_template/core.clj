@@ -74,6 +74,8 @@
 ;; в теории, можно в какой-нибудь кривой symbol положить что-то не хорошее
 (defn- default-write [this ^Writer w ctx attrs]
   (cond
+    ;; todo? clojure.pprint/cl-format
+    ;; не работает с clojure.lang.Ratio
     (:format attrs) (.append w (format (:format attrs) this))
     (:pretty attrs) (pp/pprint this w)
     true            (.append w (str this))))

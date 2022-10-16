@@ -49,12 +49,7 @@
 
     (. "a" "b")
     nil
-    "b"
-
-    (. {:format "%b"})
-    nil
-    "false"))
-
+    "b"))
 
 (t/deftest string-test
   (test-tmpl
@@ -154,6 +149,12 @@
     (. (:a) "empty")
     {}
     "empty"))
+
+(t/deftest format-test
+  (test-tmpl
+    (. {:format "%b"})
+    nil
+    "false"))
 
 (t/deftest branch-ctx-test
   (t/are [active? html] (= html (render '(:active? (:login) (:error-msg))
