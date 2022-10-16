@@ -1,7 +1,8 @@
 (ns darkleaf.web-template.core
   (:refer-clojure :exclude [compile])
   (:require
-   [clojure.string :as str])
+   [clojure.string :as str]
+   [clojure.pprint :as pp])
   (:import
    (java.io Writer StringWriter)))
 
@@ -20,9 +21,11 @@
 
 ;; tmpl :: w data -> ()
 
-
 (defprotocol Section
-  (write [this ^Writer writer ctx block-tmpl inverted-block-tmpl]))
+  ;; todo: attrs (:foo {:class "foo"} (.) "not found"
+  (write
+    [this writer ctx]
+    [this writer ctx block-tmpl inverted-block-tmpl]))
 
 (defn- nil-tmpl [_ _])
 
@@ -30,6 +33,11 @@
   (when (nil? node)
     nil-tmpl))
 
+(declare dynamic-node)
+
+(defn- dot-node [node]
+  (when (= '. node)
+    (dynamic-node '(.))))
 
 (defn- string-node [node]
   (when (string? node)
@@ -64,12 +72,13 @@
 
 (defn- dynamic-node [[key block inverted-block :as node]]
   (when (list? node)
-    (let [block          (compile block)
-          inverted-block (compile inverted-block)]
+    (let [write' (if (= 1 (count node))
+                   write
+                   #(write %1 %2 %3 (compile block) (compile inverted-block)))]
       (fn [w ctx]
         (let [value (get ctx key)
               ctx   (ctx-push ctx value)]
-          (write value w ctx block inverted-block))))))
+          (write' value w ctx))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
@@ -81,6 +90,7 @@
   (chain-handlers node
     nil-node
     string-node
+    dot-node
     dynamic-node
     <>-node
     static-tag--no-attrs--body))
@@ -92,37 +102,57 @@
     (.toString sw)))
 
 (extend-protocol Section
+  nil
+  (write
+    ([this ^Writer w ctx]
+     (.append w "nil"))
+    ([_ w ctx _ inverted-block-tmpl]
+     (inverted-block-tmpl w ctx)))
+
   ;; todo: escape
   String
-  (write [this ^Writer w ctx block-tmpl inverted-block-tmpl]
-    (if-not (str/blank? this)
-      (if (= nil-tmpl block-tmpl)
-        (.append w this)
-        (block-tmpl w ctx))
-      (inverted-block-tmpl ctx)))
-
-  ;; todo: Numbers
-
-  nil
-  (write [_ w ctx _ inverted-block-tmpl]
-    (inverted-block-tmpl w ctx))
+  (write
+    ([this ^Writer w ctx]
+     (.append w this))
+    ([this ^Writer w ctx block-tmpl inverted-block-tmpl]
+     (if-not (str/blank? this)
+       (block-tmpl w ctx)
+       (inverted-block-tmpl w ctx))))
 
   Boolean
-  (write [this w ctx block-tmpl inverted-block-tmpl]
-    (if this
-      (block-tmpl w ctx)
-      (inverted-block-tmpl w ctx)))
+  (write
+    ([this ^Writer w ctx]
+     (.append w (str this)))
+    ([this w ctx block-tmpl inverted-block-tmpl]
+     (if this
+       (block-tmpl w ctx)
+       (inverted-block-tmpl w ctx))))
 
-  clojure.lang.IPersistentVector
-  (write [this w ctx block-tmpl inverted-block-tmpl]
-    (if (seq this)
-      (doseq [item this
-              :let [ctx (ctx-push ctx item)]]
-        (block-tmpl w ctx))
-      (inverted-block-tmpl w ctx)))
+  clojure.lang.Sequential
+  (write
+    ([this ^Writer w ctx]
+     (pp/pprint this w))
+    ([this ^Writer w ctx block-tmpl inverted-block-tmpl]
+     (if (seq this)
+       (doseq [item this
+               :let [ctx (ctx-push ctx item)]]
+         (block-tmpl w ctx)
+         (.append w " "))
+       (inverted-block-tmpl w ctx))))
 
   clojure.lang.IPersistentMap
-  (write [this w ctx block-tmpl inverted-block-tmpl]
-    (if (seq this)
-      (block-tmpl w ctx)
-      (inverted-block-tmpl w ctx))))
+  (write
+    ([this w ctx]
+     (pp/pprint this w))
+    ([this w ctx block-tmpl inverted-block-tmpl]
+     (if (seq this)
+       (block-tmpl w ctx)
+       (inverted-block-tmpl w ctx)))))
+
+  ;; todo: nubmers: long, double {:format "%..."}
+
+  ;; Object
+  ;; (write
+  ;;   ;; todo: throw
+  ;;   ([this w ctx]
+  ;;    (pp/pprint this w))))

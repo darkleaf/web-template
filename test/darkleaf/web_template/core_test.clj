@@ -3,84 +3,202 @@
    [darkleaf.web-template.core :as wt]
    [clojure.test :as t]))
 
-(t/deftest case-0-test
-  (t/are [html node data] (= html (let [tmpl (wt/compile node)]
-                                    (wt/render-to-string tmpl data)))
-    "a"
+(defn- render [node data]
+  (let [tmpl (wt/compile node)]
+    (wt/render-to-string tmpl data)))
+
+(defmacro test-tmpl
+  {:private true
+   :style/indent :defn}
+  [& body]
+  (when (seq body)
+    `(t/are [node# data# html#] (= html# (render (quote node#) data#))
+       ~@body)))
+
+(t/deftest static-test
+  (test-tmpl
     "a"
     nil
+    "a"
 
+    [div]
+    nil
     "<div></div>"
-    '[div]
-    nil
 
+    [div "a"]
+    nil
     "<div>a</div>"
-    '[div "a"]
-    nil
 
-    "<div><div></div></div>"
-    '[div [div]]
+    [div [div]]
     nil
+    "<div><div></div></div>"))
 
-    "<div>a</div>"
-    '[div (:name)]
+(t/deftest nil-test
+  (test-tmpl
+    .
+    nil
+    "nil"
+
+    (. .)
+    nil
+    ""
+
+    (. "a" "b")
+    nil
+    "b"))
+
+(t/deftest string-test
+  (test-tmpl
+    .
+    "a"
+    "a"
+
+    (. .)
+    "a"
+    "a"
+
+    (. . "b")
+    "a"
+    "a"
+
+    (. . "b")
+    ""
+    "b"
+
+    #_(. {:escape false} . "not-found")))
+
+(t/deftest boolean-test
+  (test-tmpl
+    .
+    true
+    "true"
+
+    .
+    false
+    "false"
+
+    (. .)
+    true
+    "true"
+
+    (. "a" "b")
+    true
+    "a"
+
+    (. "a" "b")
+    false
+    "b"))
+
+(t/deftest seq-test
+  (test-tmpl
+    .
+    []
+    "[]\n"
+
+    .
+    [true false]
+    "[true false]\n"
+
+    .
+    (list)
+    "()\n"
+
+    .
+    (list true)
+    "(true)\n"
+
+    (. .)
+    [true false]
+    "true false "
+
+    (. . "empty")
+    [true false]
+    "true false "
+
+    (. . "empty")
+    []
+    "empty"))
+
+(t/deftest map-test
+  (test-tmpl
+    .
+    {}
+    "{}\n"
+
+    .
+    {:a "value"}
+    "{:a \"value\"}\n"
+
+    (. (:a))
+    {:a "value"}
+    "value"
+
+    (. (:a) "empty")
+    {:a "value"}
+    "value"
+
+    (. (:a) "empty")
+    {}
+    "empty"))
+
+(t/deftest branch-ctx-test
+  (t/are [active? html] (= html (render '(:active? (:login) (:error-msg))
+                                        {:active?   active?
+                                         :login     "john"
+                                         :error-msg "not active"}))
+    true
+    "john"
+
+    false
+    "not active"
+
+    false
+    "not active"
+
+    ""
+    "not active"
+
+    []
+    "not active"
+
+    {}
+    "not active"))
+
+
+(t/deftest case-0-test
+  (test-tmpl
+    [div (:name)]
     {:name "a"}
+    "<div>a</div>"
 
-    "<div>a</div><div>b</div>"
-    '(:users
-      [div (:login)])
+    (:users
+     [div (:login)])
     {:users [{:login "a"}
              {:login "b"}]}
+    "<div>a</div> <div>b</div> "
 
-    "a"
-    '(:active?
-      (:login))
-    {:active? true
-     :login   "a"}
-
-    "not active"
-    '(:active?
-      (:login)
-      "not active")
-    {:active? false}
-
-    "not active"
-    '(:active?
-      (:login)
-      "not active")
-    {:active? nil}
-
-    "a"
-    '(:user
-      (:login))
-    {:user {:login "a"}}
-
-    "not found"
-    '(:user
-      (:login)
-      "not found")
-    {:user {}}
-
-    "ab"
-    '(. (.))
-    ["a" "b"]
-
-    "empty"
-    '(. (.) "empty")
-    []
-
-    "<div>cb*a*</div>"
-    '(:a (:b [div (:c) (:b*) (:a*)]))
+    (:a (:b [div (:c) (:b*) (:a*)]))
     {:a  {:b  {:c "c"}
           :b* "b*"}
      :a* "a*"}
+    "<div>cb*a*</div>"))
 
-    "<div>a</div><div>b</div><div>c</div>"
-    '[<>
-      [div "a"]
-      [div "b"]
-      [div "c"]]
-    nil))
+
+(t/deftest special-tags-test
+  (test-tmpl
+    [<>
+     [div "a"]
+     [div "b"]]
+    nil
+    "<div>a</div><div>b</div>"
+
+    (.) ;; -> .
+    "a"
+    "a"
+
+    .
+    "a"
+    "a"))
 
 
 '[div {class (:class)}]
