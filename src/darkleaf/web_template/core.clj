@@ -150,10 +150,17 @@
        (block-tmpl w ctx)
        (inverted-block-tmpl w ctx)))))
 
-  ;; todo: nubmers: long, double {:format "%..."}
-
   ;; Object
   ;; (write
   ;;   ;; todo: throw
   ;;   ([this w ctx]
   ;;    (pp/pprint this w))))
+
+(comment
+  (format "%2.2f" 0.123)
+  (:num {:format "%2.2f"})
+
+  (:obj {:pretty true})
+
+  ;; вставит между
+  (:vec {:separator ", "}))
