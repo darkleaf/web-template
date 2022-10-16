@@ -23,9 +23,7 @@
 
 (defprotocol Section
   ;; todo: attrs (:foo {:class "foo"} (.) "not found"
-  (write
-    [this writer ctx]
-    [this writer ctx block-tmpl inverted-block-tmpl]))
+  (write [this writer ctx attrs block-tmpl inverted-block-tmpl]))
 
 (defn- nil-tmpl [_ _])
 
@@ -71,15 +69,30 @@
         (.append w tag)
         (.append w ">")))))
 
-(defn- dynamic-node [[key block inverted-block :as node]]
+
+;; todo: escape
+;; в теории, можно в какой-нибудь кривой symbol положить что-то не хорошее
+(defn- default-write [this ^Writer w ctx attrs]
+  (cond
+    (:format attrs) (.append w (format (:format attrs) this))
+    (:pretty attrs) (pp/pprint this w)
+    true            (.append w (str this))))
+
+(defn- dynamic-node [node]
   (when (list? node)
-    (let [write' (if (= 1 (count node))
-                   write
-                   #(write %1 %2 %3 (compile block) (compile inverted-block)))]
+    (let [key            (nth node 0 nil)
+          attrs?         (map? (nth node 1 nil))
+          attrs          (if attrs? (nth node 1 nil))
+          block          (nth node (if attrs? 2 1) nil)
+          inverted-block (nth node (if attrs? 3 2) nil)
+          write'         (if (and (nil? block)
+                                  (nil? inverted-block))
+                           default-write
+                           #(write %1 %2 %3 %4 (compile block) (compile inverted-block)))]
       (fn [w ctx]
         (let [value (get ctx key)
               ctx   (ctx-push ctx value)]
-          (write' value w ctx))))))
+          (write' value w ctx attrs))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
@@ -104,63 +117,36 @@
 
 (extend-protocol Section
   nil
-  (write
-    ([this ^Writer w ctx]
-     (.append w "nil"))
-    ([_ w ctx _ inverted-block-tmpl]
-     (inverted-block-tmpl w ctx)))
+  (write[_ w ctx attrs _ inverted-block-tmpl]
+    (inverted-block-tmpl w ctx))
 
-  ;; todo: escape
   String
-  (write
-    ([this ^Writer w ctx]
-     (.append w this))
-    ([this ^Writer w ctx block-tmpl inverted-block-tmpl]
-     (if-not (str/blank? this)
-       (block-tmpl w ctx)
-       (inverted-block-tmpl w ctx))))
+  (write [this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
+    (if-not (str/blank? this)
+      (block-tmpl w ctx)
+      (inverted-block-tmpl w ctx)))
 
   Boolean
-  (write
-    ([this ^Writer w ctx]
-     (.append w (str this)))
-    ([this w ctx block-tmpl inverted-block-tmpl]
-     (if this
-       (block-tmpl w ctx)
-       (inverted-block-tmpl w ctx))))
+  (write [this w ctx attrs block-tmpl inverted-block-tmpl]
+    (if this
+      (block-tmpl w ctx)
+      (inverted-block-tmpl w ctx)))
 
   clojure.lang.Sequential
-  (write
-    ([this ^Writer w ctx]
-     (pp/pprint this w))
-    ([this ^Writer w ctx block-tmpl inverted-block-tmpl]
-     (if (seq this)
-       (doseq [item this
-               :let [ctx (ctx-push ctx item)]]
-         (block-tmpl w ctx)
-         (.append w " "))
-       (inverted-block-tmpl w ctx))))
+  (write [this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
+    (if (seq this)
+      (doseq [item this
+              :let [ctx (ctx-push ctx item)]]
+        (block-tmpl w ctx)
+        (.append w " "))
+      (inverted-block-tmpl w ctx)))
 
   clojure.lang.IPersistentMap
-  (write
-    ([this w ctx]
-     (pp/pprint this w))
-    ([this w ctx block-tmpl inverted-block-tmpl]
-     (if (seq this)
-       (block-tmpl w ctx)
-       (inverted-block-tmpl w ctx)))))
-
-  ;; Object
-  ;; (write
-  ;;   ;; todo: throw
-  ;;   ([this w ctx]
-  ;;    (pp/pprint this w))))
+  (write [this w ctx attrs block-tmpl inverted-block-tmpl]
+    (if (seq this)
+      (block-tmpl w ctx)
+      (inverted-block-tmpl w ctx))))
 
 (comment
-  (format "%2.2f" 0.123)
-  (:num {:format "%2.2f"})
-
-  (:obj {:pretty true})
-
   ;; вставит между
   (:vec {:separator ", "}))

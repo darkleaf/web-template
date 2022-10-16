@@ -37,7 +37,7 @@
   (test-tmpl
     .
     nil
-    "nil"
+    ""
 
     (. .)
     nil
@@ -45,7 +45,12 @@
 
     (. "a" "b")
     nil
-    "b"))
+    "b"
+
+    (. {:format "%b"})
+    nil
+    "false"))
+
 
 (t/deftest string-test
   (test-tmpl
@@ -93,19 +98,19 @@
   (test-tmpl
     .
     []
-    "[]\n"
+    "[]"
 
     .
     [true false]
-    "[true false]\n"
+    "[true false]"
 
     .
     (list)
-    "()\n"
+    "()"
 
     .
     (list true)
-    "(true)\n"
+    "(true)"
 
     (. .)
     [true false]
@@ -123,11 +128,11 @@
   (test-tmpl
     .
     {}
-    "{}\n"
+    "{}"
 
     .
     {:a "value"}
-    "{:a \"value\"}\n"
+    "{:a \"value\"}"
 
     (. (:a))
     {:a "value"}
