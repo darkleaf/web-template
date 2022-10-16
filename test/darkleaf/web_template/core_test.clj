@@ -29,6 +29,10 @@
     nil
     "<div>a</div>"
 
+    [div "a" "b"]
+    nil
+    "<div>a b</div>"
+
     [div [div]]
     nil
     "<div><div></div></div>"))
@@ -114,15 +118,20 @@
 
     (. .)
     [true false]
-    "true false "
+    "true false"
 
     (. . "empty")
     [true false]
-    "true false "
+    "true false"
 
     (. . "empty")
     []
-    "empty"))
+    "empty"
+
+    (. {:separator ", "} .)
+    ["a" "b"]
+    "a, b"))
+
 
 (t/deftest map-test
   (test-tmpl
@@ -180,13 +189,13 @@
      [div (:login)])
     {:users [{:login "a"}
              {:login "b"}]}
-    "<div>a</div> <div>b</div> "
+    "<div>a</div> <div>b</div>"
 
     (:a (:b [div (:c) (:b*) (:a*)]))
     {:a  {:b  {:c "c"}
           :b* "b*"}
      :a* "a*"}
-    "<div>cb*a*</div>"))
+    "<div>c b* a*</div>"))
 
 
 (t/deftest special-tags-test
@@ -195,7 +204,7 @@
      [div "a"]
      [div "b"]]
     nil
-    "<div>a</div> <div>b</div> "
+    "<div>a</div> <div>b</div>"
 
     (.) ;; -> .
     "a"

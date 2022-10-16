@@ -25,6 +25,9 @@
   ;; todo: attrs (:foo {:class "foo"} (.) "not found"
   (write [this writer ctx attrs block-tmpl inverted-block-tmpl]))
 
+(defn- separator-tmpl [^Writer w _]
+  (.append w " "))
+
 (defn- nil-node [node]
   (when (nil? node)
     (fn [_ _])))
@@ -45,9 +48,8 @@
              (= '<> tag))
     (let [body (map compile body)]
       (fn [^Writer w ctx]
-        (doseq [item body]
-          (item w ctx)
-          (.append w " "))))))
+        (doseq [item (interpose separator-tmpl body)]
+          (item w ctx))))))
 
 (defn- static-tag--no-attrs--body [[tag & body :as node]]
   (when (and (vector? node)
@@ -60,7 +62,7 @@
         (.append w tag)
         (.append w ">")
 
-        (doseq [item body]
+        (doseq [item (interpose separator-tmpl body)]
           (item w ctx))
 
         (.append w "</")
@@ -133,10 +135,13 @@
   clojure.lang.Sequential
   (write [this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
     (if (seq this)
-      (doseq [item this
-              :let [ctx (ctx-push ctx item)]]
-        (block-tmpl w ctx)
-        (.append w " "))
+      (let [separator      (str (get attrs :separator " "))
+            separator-tmpl #(.append w separator)]
+        (doseq [tmpl (interpose separator-tmpl
+                                (for [item this
+                                      :let [ctx (ctx-push ctx item)]]
+                                  #(block-tmpl w ctx)))]
+           (tmpl)))
       (inverted-block-tmpl w ctx)))
 
   clojure.lang.IPersistentMap
@@ -144,7 +149,3 @@
     (if (seq this)
       (block-tmpl w ctx)
       (inverted-block-tmpl w ctx))))
-
-(comment
-  ;; вставит между
-  (:vec {:separator ", "}))
