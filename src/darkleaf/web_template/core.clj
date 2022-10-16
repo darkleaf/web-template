@@ -81,12 +81,12 @@
     (let [key            (nth node 0 nil)
           attrs?         (map? (nth node 1 nil))
           attrs          (if attrs? (nth node 1 nil))
-          block          (nth node (if attrs? 2 1) nil)
-          inverted-block (nth node (if attrs? 3 2) nil)
-          write'         (if (and (nil? block)
-                                  (nil? inverted-block))
+          block          (-> node (nth (if attrs? 2 1) nil) compile)
+          inverted-block (-> node (nth (if attrs? 3 2) nil) compile)
+          write'         (if (= (if attrs? 2 1)
+                                (count node))
                            default-write
-                           #(write %1 %2 %3 %4 (compile block) (compile inverted-block)))]
+                           #(write %1 %2 %3 %4 block inverted-block))]
       (fn [w ctx]
         (let [value (get ctx key)
               ctx   (ctx-push ctx value)]
