@@ -17,12 +17,36 @@
 
 (comment
   [tag & body]
-  [tag attributes & body])
+  [tag {} & body]
+  [tag ^:attrs (:attrs) & body]
+
+  (:key ^:attrs (:attrs))
+  (:key (:attrs) nil nil)
+  (:key (:attrs) block nil)
+  (:key (:attrs) block inverted-block)
+
+  ;; так как-то получше выглядит
+  (:key {. :attrs})
+
+  [div {class (:class)}]
+  [div {(:attr) true}]
+  [div {. :attrs}]
+  [div {data {foo "43"}}]
+
+  [div {class (:class "default")}]
+
+  [.foo#bar {data {(:segment) {foo  (:x)
+                               (:y) "bar"
+                               "xyz" "42"}}}]
+
+  (:panel-component {:title [.title (:title)]}
+                    "content"
+                    "empty"))
 
 ;; tmpl :: w data -> ()
 
+
 (defprotocol Section
-  ;; todo: attrs (:foo {:class "foo"} (.) "not found"
   (write [this writer ctx attrs block-tmpl inverted-block-tmpl]))
 
 (defn- separator-tmpl [^Writer w _]
