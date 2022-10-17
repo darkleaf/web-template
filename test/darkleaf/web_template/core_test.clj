@@ -127,7 +127,6 @@
     ["a" "b"]
     "a, b"))
 
-
 (t/deftest map-test
   (test-tmpl
     .
@@ -150,6 +149,16 @@
     {}
     "empty"))
 
+(t/deftest default-inverted-block-test
+  (t/are [data] (= "" (render '(. "block")
+                              data))
+    nil
+    false
+    ""
+    []
+    '()
+    {}))
+
 (t/deftest format-test
   (test-tmpl
     (. {:format "%b"})
@@ -167,9 +176,6 @@
     false
     "not active"
 
-    false
-    "not active"
-
     ""
     "not active"
 
@@ -178,7 +184,6 @@
 
     {}
     "not active"))
-
 
 (t/deftest case-0-test
   (test-tmpl
