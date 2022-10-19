@@ -2,7 +2,8 @@
   (:refer-clojure :exclude [compile])
   (:require
    [clojure.string :as str]
-   [clojure.pprint :as pp])
+   [clojure.pprint :as pp]
+   [darkleaf.web-template.protocols :as p])
   (:import
    (java.io Writer StringWriter)))
 
@@ -18,14 +19,12 @@
 (comment
   [tag & body]
   [tag {} & body]
-  [tag ^:attrs (:attrs) & body]
+  [.class.klass#id {. :attrs, class "xyz"} & body]
 
-  (:key ^:attrs (:attrs))
   (:key (:attrs) nil nil)
   (:key (:attrs) block nil)
   (:key (:attrs) block inverted-block)
 
-  ;; так как-то получше выглядит
   (:key {. :attrs})
 
   [div {class (:class)}]
@@ -46,8 +45,10 @@
 ;; tmpl :: w data -> ()
 
 
-(defprotocol Section
-  (write [this writer ctx attrs block-tmpl inverted-block-tmpl]))
+;; tmpl должен реализовывать Section / Component
+;; и block должен быть в контексте
+;; нужно, чтобы layout сделать
+
 
 (defn- separator-tmpl [^Writer w _]
   (.append w " "))
@@ -114,7 +115,7 @@
           write'         (if (= (if attrs? 2 1)
                                 (count node))
                            default-write
-                           #(write %1 %2 %3 %4 block inverted-block))]
+                           #(p/write %1 %2 %3 %4 block inverted-block))]
       (fn [w ctx]
         (let [value (get ctx key)
               ctx   (ctx-push ctx value)]
@@ -141,7 +142,7 @@
     (template sw ctx)
     (.toString sw)))
 
-(extend-protocol Section
+(extend-protocol p/Component
   nil
   (write[_ w ctx attrs _ inverted-block-tmpl]
     (inverted-block-tmpl w ctx))
