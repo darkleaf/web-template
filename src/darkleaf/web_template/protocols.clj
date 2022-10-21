@@ -1,4 +1,8 @@
-(ns darkleaf.web-template.protocols)
+(ns darkleaf.web-template.protocols
+ (:import
+  (java.io Writer)))
 
 (defprotocol Component
-  (write [this writer ctx attrs block inverted-block]))
+  (render
+    [this ^Writer writer ctx attrs]
+    [this ^Writer writer ctx attrs block inverted-block]))

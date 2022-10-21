@@ -159,11 +159,11 @@
     '()
     {}))
 
-(t/deftest format-test
-  (test-tmpl
-    (. {:format "%b"})
-    nil
-    "false"))
+#_(t/deftest format-test
+    (test-tmpl
+      (. {:format "%b"})
+      nil
+      "false"))
 
 (t/deftest branch-ctx-test
   (t/are [active? html] (= html (render '(:active? (:login) (:error-msg))

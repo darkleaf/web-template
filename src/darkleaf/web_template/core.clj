@@ -34,13 +34,25 @@
 
   [div {class (:class "default")}]
 
-  [.foo#bar {data {(:segment) {foo  (:x)
-                               (:y) "bar"
+  [.foo#bar {data {(:segment) {foo   (:x)
+                               (:y)  "bar"
                                "xyz" "42"}}}]
+
+  (:format {:value :my-value :format "%.2f"})
+  (:debug {:value :my-value}) ;; <pre> pprint
+  (:raw {:value :my-value})
 
   (:panel-component {:title [.title (:title)]}
                     "content"
-                    "empty"))
+                    "empty")
+
+  ;; чтобы можно было делать так:
+  [<>
+   "<!DOCTYPE html>"
+   [html
+    [head ...]
+    [body
+     (:body-component {} . "not found")]]])
 
 ;; tmpl :: w data -> ()
 
@@ -94,17 +106,6 @@
         (.append w tag)
         (.append w ">")))))
 
-
-;; todo: escape
-;; в теории, можно в какой-нибудь кривой symbol положить что-то не хорошее
-(defn- default-write [this ^Writer w ctx attrs]
-  (cond
-    ;; todo? clojure.pprint/cl-format
-    ;; не работает с clojure.lang.Ratio
-    (:format attrs) (.append w (format (:format attrs) this))
-    (:pretty attrs) (pp/pprint this w)
-    true            (.append w (str this))))
-
 (defn- dynamic-node [node]
   (when (list? node)
     (let [key            (nth node 0 nil)
@@ -112,14 +113,14 @@
           attrs          (if attrs? (nth node 1 nil))
           block          (-> node (nth (if attrs? 2 1) nil) compile)
           inverted-block (-> node (nth (if attrs? 3 2) nil) compile)
-          write'         (if (= (if attrs? 2 1)
-                                (count node))
-                           default-write
-                           #(p/write %1 %2 %3 %4 block inverted-block))]
+          render'         (if (= (if attrs? 2 1)
+                                 (count node))
+                            p/render
+                            #(p/render %1 %2 %3 %4 block inverted-block))]
       (fn [w ctx]
         (let [value (get ctx key)
               ctx   (ctx-push ctx value)]
-          (write' value w ctx attrs))))))
+          (render' value w ctx attrs))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
@@ -144,35 +145,51 @@
 
 (extend-protocol p/Component
   nil
-  (write[_ w ctx attrs _ inverted-block-tmpl]
-    (inverted-block-tmpl w ctx))
+  (render
+    ([this _ _ _])
+    ([_ w ctx attrs _ inverted-block-tmpl]
+     (inverted-block-tmpl w ctx)))
 
   String
-  (write [this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
-    (if-not (str/blank? this)
-      (block-tmpl w ctx)
-      (inverted-block-tmpl w ctx)))
+  (render
+    ([this ^Writer w ctx attrs]
+     (.append w this))
+    ([this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
+     (if-not (str/blank? this)
+       (block-tmpl w ctx)
+       (inverted-block-tmpl w ctx))))
 
   Boolean
-  (write [this w ctx attrs block-tmpl inverted-block-tmpl]
-    (if this
-      (block-tmpl w ctx)
-      (inverted-block-tmpl w ctx)))
+  (render
+    ([this w ctx attrs]
+     (.append ^Writer w (str this)))
+    ([this w ctx attrs block-tmpl inverted-block-tmpl]
+     (if this
+       (block-tmpl w ctx)
+       (inverted-block-tmpl w ctx))))
 
   clojure.lang.Sequential
-  (write [this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
-    (if (seq this)
-      (let [separator      (str (get attrs :separator " "))
-            separator-tmpl #(.append w separator)]
-        (doseq [tmpl (interpose separator-tmpl
-                                (for [item this
-                                      :let [ctx (ctx-push ctx item)]]
-                                  #(block-tmpl w ctx)))]
-           (tmpl)))
-      (inverted-block-tmpl w ctx)))
+  (render
+    ([this w ctx attrs]
+     ;; todo: escape
+     (.append ^Writer w (str this)))
+    ([this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
+     (if (seq this)
+       (let [separator      (str (get attrs :separator " "))
+             separator-tmpl #(.append w separator)]
+         (doseq [tmpl (interpose separator-tmpl
+                                 (for [item this
+                                       :let [ctx (ctx-push ctx item)]]
+                                   #(block-tmpl w ctx)))]
+            (tmpl)))
+       (inverted-block-tmpl w ctx))))
 
   clojure.lang.IPersistentMap
-  (write [this w ctx attrs block-tmpl inverted-block-tmpl]
-    (if (seq this)
-      (block-tmpl w ctx)
-      (inverted-block-tmpl w ctx))))
+  (render
+    ([this w ctx attrs]
+     ;; todo: escape
+     (.append ^Writer w (str this)))
+    ([this w ctx attrs block-tmpl inverted-block-tmpl]
+     (if (seq this)
+       (block-tmpl w ctx)
+       (inverted-block-tmpl w ctx)))))
