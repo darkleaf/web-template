@@ -151,6 +151,15 @@
     (.toString sw)))
 
 (extend-protocol p/Component
+  Template
+  (render
+    ([this ^Writer w ctx attrs]
+     (.render this w (merge ctx attrs)))
+    ([this w ctx attrs block inverted-block]
+     (p/render this w
+               (assoc ctx :block block :inverted-block inverted-block)
+               attrs)))
+
   nil
   (render
     ([this _ _ _])

@@ -219,3 +219,26 @@
     .
     "a"
     "a"))
+
+(t/deftest template-as-component-1
+  (let [layout (wt/compile
+                '[layout
+                  (:body {:param "xyz"})])
+        page   (wt/compile
+                '[page (:param)])]
+    (t/is (= "<layout><page>xyz</page></layout>"
+             (wt/render-to-string layout {:body page})))))
+
+(t/deftest template-as-component-3
+  (let [layout (wt/compile
+                '[layout
+                  (:body {:param "param"}
+                         "block"
+                         "inverted block")])
+        page   (wt/compile
+                '[page
+                  (:param)
+                  (:block)
+                  (:inverted-block)])]
+    (t/is (= "<layout><page>param block inverted block</page></layout>"
+             (wt/render-to-string layout {:body page})))))
