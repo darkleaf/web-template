@@ -149,6 +149,23 @@
     {}
     "empty"))
 
+(t/deftest object-test
+  (let [obj (reify Object
+              (toString [_]
+                "obj"))]
+    (test-tmpl
+      .
+      obj
+      "obj"
+
+      (. .)
+      obj
+      "obj"
+
+      (. . "empty")
+      obj
+      "obj")))
+
 (t/deftest default-inverted-block-test
   (t/are [data] (= "" (render '(. "block")
                               data))

@@ -166,9 +166,18 @@
     ([_ w ctx attrs _ ^Template inverted-block]
      (.render inverted-block w ctx)))
 
+  Object
+  (render
+    ([this ^Writer w _ _]
+     ;; todo: escape
+     (.append w (str this)))
+    ([_ w ctx attrs ^Template block _]
+     (.render block w ctx)))
+
   String
   (render
     ([this ^Writer w ctx attrs]
+     ;; todo: escape
      (.append w this))
     ([this w ctx attrs ^Template block ^Template inverted-block]
      (if-not (str/blank? this)
