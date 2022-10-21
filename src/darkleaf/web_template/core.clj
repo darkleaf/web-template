@@ -5,7 +5,8 @@
    [clojure.pprint :as pp]
    [darkleaf.web-template.protocols :as p])
   (:import
-   (java.io Writer StringWriter)))
+   (java.io Writer StringWriter)
+   (darkleaf.web_template.protocols Template)))
 
 (set! *warn-on-reflection* true)
 
@@ -61,13 +62,15 @@
 ;; и block должен быть в контексте
 ;; нужно, чтобы layout сделать
 
-
-(defn- separator-tmpl [^Writer w _]
-  (.append w " "))
+(def ^:private space
+  (reify Template
+    (render [_ w ctx]
+      (.append w " "))))
 
 (defn- nil-node [node]
   (when (nil? node)
-    (fn [_ _])))
+    (reify Template
+      (render [_ _ _]))))
 
 (declare dynamic-node)
 
@@ -77,16 +80,18 @@
 
 (defn- string-node [node]
   (when (string? node)
-    (fn [^Writer w ctx]
-      (.append w ^String node))))
+    (reify Template
+      (render [_ w ctx]
+        (.append w ^String node)))))
 
 (defn- <>-node [[tag & body :as node]]
   (when (and (vector? node)
              (= '<> tag))
     (let [body (map compile body)]
-      (fn [^Writer w ctx]
-        (doseq [item (interpose separator-tmpl body)]
-          (item w ctx))))))
+      (reify Template
+        (render [_ w ctx]
+          (doseq [^Template item (interpose space body)]
+            (.render item w ctx)))))))
 
 (defn- static-tag--no-attrs--body [[tag & body :as node]]
   (when (and (vector? node)
@@ -94,17 +99,18 @@
              (not (-> body first map?)))
     (let [tag  (name tag)
           body (map compile body)]
-      (fn [^Writer w ctx]
-        (.append w "<")
-        (.append w tag)
-        (.append w ">")
+      (reify Template
+        (render [_ w ctx]
+          (.append w "<")
+          (.append w tag)
+          (.append w ">")
 
-        (doseq [item (interpose separator-tmpl body)]
-          (item w ctx))
+          (doseq [^Template item (interpose space body)]
+            (.render item w ctx))
 
-        (.append w "</")
-        (.append w tag)
-        (.append w ">")))))
+          (.append w "</")
+          (.append w tag)
+          (.append w ">"))))))
 
 (defn- dynamic-node [node]
   (when (list? node)
@@ -117,10 +123,11 @@
                                  (count node))
                             p/render
                             #(p/render %1 %2 %3 %4 block inverted-block))]
-      (fn [w ctx]
-        (let [value (get ctx key)
-              ctx   (ctx-push ctx value)]
-          (render' value w ctx attrs))))))
+      (reify Template
+        (render [_ w ctx]
+          (let [value (get ctx key)
+                ctx   (ctx-push ctx value)]
+            (render' value w ctx attrs)))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
@@ -137,59 +144,59 @@
     <>-node
     static-tag--no-attrs--body))
 
-(defn render-to-string [template data]
+(defn render-to-string [^Template template data]
   (let [sw  (StringWriter.)
         ctx (ctx-push nil data)]
-    (template sw ctx)
+    (.render template sw ctx)
     (.toString sw)))
 
 (extend-protocol p/Component
   nil
   (render
     ([this _ _ _])
-    ([_ w ctx attrs _ inverted-block-tmpl]
-     (inverted-block-tmpl w ctx)))
+    ([_ w ctx attrs _ ^Template inverted-block]
+     (.render inverted-block w ctx)))
 
   String
   (render
     ([this ^Writer w ctx attrs]
      (.append w this))
-    ([this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
+    ([this w ctx attrs ^Template block ^Template inverted-block]
      (if-not (str/blank? this)
-       (block-tmpl w ctx)
-       (inverted-block-tmpl w ctx))))
+       (.render block w ctx)
+       (.render inverted-block w ctx))))
 
   Boolean
   (render
-    ([this w ctx attrs]
-     (.append ^Writer w (str this)))
-    ([this w ctx attrs block-tmpl inverted-block-tmpl]
+    ([this ^Writer w ctx attrs]
+     (.append w (str this)))
+    ([this w ctx attrs ^Template block ^Template inverted-block]
      (if this
-       (block-tmpl w ctx)
-       (inverted-block-tmpl w ctx))))
+       (.render block w ctx)
+       (.render inverted-block w ctx))))
 
   clojure.lang.Sequential
   (render
-    ([this w ctx attrs]
+    ([this ^Writer w ctx attrs]
      ;; todo: escape
-     (.append ^Writer w (str this)))
-    ([this ^Writer w ctx attrs block-tmpl inverted-block-tmpl]
+     (.append w (str this)))
+    ([this ^Writer w ctx attrs ^Template block ^Template inverted-block]
      (if (seq this)
-       (let [separator      (str (get attrs :separator " "))
-             separator-tmpl #(.append w separator)]
-         (doseq [tmpl (interpose separator-tmpl
+       (let [separator (-> attrs (get :separator " ") str)
+             separator #(.append w separator)]
+         (doseq [tmpl (interpose separator
                                  (for [item this
                                        :let [ctx (ctx-push ctx item)]]
-                                   #(block-tmpl w ctx)))]
+                                   #(.render block w ctx)))]
             (tmpl)))
-       (inverted-block-tmpl w ctx))))
+       (.render inverted-block w ctx))))
 
   clojure.lang.IPersistentMap
   (render
-    ([this w ctx attrs]
+    ([this ^Writer w ctx attrs]
      ;; todo: escape
-     (.append ^Writer w (str this)))
-    ([this w ctx attrs block-tmpl inverted-block-tmpl]
+     (.append w (str this)))
+    ([this w ctx attrs ^Template block ^Template inverted-block]
      (if (seq this)
-       (block-tmpl w ctx)
-       (inverted-block-tmpl w ctx)))))
+       (.render block w ctx)
+       (.render inverted-block w ctx)))))
