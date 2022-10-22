@@ -9,13 +9,6 @@
 
 (set! *warn-on-reflection* true)
 
-(declare compile)
-
-(defn- ctx-push [ctx v]
-  (merge ctx
-         (if (map? v) v)
-         {'. v}))
-
 (comment
   [tag & body]
   [tag {} & body]
@@ -54,12 +47,12 @@
     [body
      (:body-component {} . "not found")]]])
 
-;; tmpl :: w data -> ()
+(declare compile)
 
-
-;; tmpl должен реализовывать Section / Component
-;; и block должен быть в контексте
-;; нужно, чтобы layout сделать
+(defn ctx-push [ctx v]
+  (merge ctx
+         (if (map? v) v)
+         {'. v}))
 
 (def ^:private space
   (reify Template
