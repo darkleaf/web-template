@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [compile])
   (:require
    [clojure.string :as str]
-   [clojure.pprint :as pp]
    [darkleaf.web-template.protocols :as p])
   (:import
    (java.io Writer StringWriter)
