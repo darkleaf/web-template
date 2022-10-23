@@ -52,7 +52,6 @@
 
 
 ;; from https://github.com/r0man/sablono/blob/master/src/sablono/normalize.cljc
-#_#_
 (defn- strip-css
   "Strip the # and . characters from the beginning of `s`."
   [s]
@@ -119,12 +118,21 @@
   (when (and (vector? node)
              (ident? tag)
              (not (-> body first map?)))
-    (let [tag  (name tag)
-          body (map compile body)]
+    (let [[^String tag id classes] (match-tag tag)
+          body                     (map compile body)]
       (reify Template
         (render [_ w ctx]
           (.append w "<")
           (.append w tag)
+          (when id
+            (.append w " id=\"")
+            (.append w ^String id)
+            (.append w "\""))
+          (when (seq classes)
+            (.append w " class=\"")
+            (doseq [^String item (interpose " " classes)]
+              (.append w item))
+            (.append w "\""))
           (.append w ">")
 
           (doseq [^Template item (interpose space body)]

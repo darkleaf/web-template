@@ -260,8 +260,7 @@
     (t/is (= "<layout><page>param block inverted block</page></layout>"
              (wt/render-to-string layout {:body page})))))
 
-#_
-(t/deftest attributes
+(t/deftest short-attributes
   (test-tmpl
     [.a]
     nil
@@ -277,33 +276,37 @@
 
     [.a#b]
     nil
-    "<div id=\"a\" class=\"b\"></div>"
+    "<div id=\"b\" class=\"a\"></div>"))
 
-    [div {class "a"}]
-    nil
-    "<div class=\"a\"></div>"
+#_(t/deftest static-attrs
+    (test-tmpl
+      [div {class "a"}]
+      nil
+      "<div class=\"a\"></div>"
 
 
-    ;; [] будут заняты под шаблон
-    ;; а атрибутам вроде как не важен порядок
-    #_#_#_
-    [div {class #{a b}}]
-    nil
-    "<div class=\"a\"></div>"
+      ;; [] будут заняты под шаблон
+      ;; а атрибутам вроде как не важен порядок
+      #_#_#_
+      [div {class #{a b}}]
+      nil
+      "<div class=\"a\"></div>"
 
-    [.a {class "b"}]
-    nil
-    "<div class=\"a b\"></div>"
+      [.a {class "b"}]
+      nil
+      "<div class=\"a b\"></div>"))
 
-    [.a {class (:class)}]
-    {:class "b"}
-    "<div class=\"a b\"></div>"
+#_(t/deftest dynamic-attrs
+    (test-tmpl
+      [.a {class (:class)}]
+      {:class "b"}
+      "<div class=\"a b\"></div>"
 
-    [.a {class (:class)
-         .     (:attrs)}]
-    {:class "b"
-     :attrs {'class "c"}}
-    "wtf?"))
+      [.a {class (:class)
+           .     (:attrs)}]
+      {:class "b"
+       :attrs {'class "c"}}
+      "wtf?"))
 
 #_"
 или если в контексте лежит
