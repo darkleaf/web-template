@@ -33,6 +33,8 @@
                                        (str/join " ")))
       :else        (assoc acc k (str v)))))
 
+;; todo? default
+;; [div {class (:class default-a default-b ...)} ...]
 (defn- add-value [ctx acc k v]
   (let [k (if (list? k)
             (get ctx (first k))
