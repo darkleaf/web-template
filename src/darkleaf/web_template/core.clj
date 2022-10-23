@@ -49,6 +49,36 @@
 
 (declare compile)
 
+
+
+;; from https://github.com/r0man/sablono/blob/master/src/sablono/normalize.cljc
+#_#_
+(defn- strip-css
+  "Strip the # and . characters from the beginning of `s`."
+  [s]
+  (when s
+    (str/replace s #"^[.#]" "")))
+
+(defn- match-tag
+  "Match `s` as a CSS tag and return a vector of tag name, CSS id and
+  CSS classes."
+  [s]
+  (let [matches (re-seq #"[#.]?[^#.]+" (name s))
+        [tag-name names]
+        (cond (empty? matches)
+              (throw (ex-info (str "Can't match CSS tag: " s) {:tag s}))
+
+              (#{\# \.} (ffirst matches)) ;; shorthand for div
+              ["div" matches]
+
+              :default
+              [(first matches) (rest matches)])]
+    [tag-name
+     (strip-css (some #(when (= \# (first %1)) %1)  names))
+     (into []
+           (comp (filter #(= \. (first %1))) (map strip-css))
+           names)]))
+
 (defn ctx-push [ctx v]
   (merge ctx
          (if (map? v) v)
