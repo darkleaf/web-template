@@ -341,14 +341,6 @@
      :attrs {"class" "c"}}
     "<div class=\"c\"></div>"))
 
-#_"
-или если в контексте лежит
-  * строка, symbol, keyword, bool, num - то это точно замена
-  * коллекция - это это добавление
-  * nil - не трогаем ?? или удаляем ??
-  * false - удаляем ??
-"
-
 (comment
   [div {data-controller users/list-item}]
   users--list-item)
