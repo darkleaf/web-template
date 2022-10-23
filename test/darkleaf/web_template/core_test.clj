@@ -260,7 +260,7 @@
     (t/is (= "<layout><page>param block inverted block</page></layout>"
              (wt/render-to-string layout {:body page})))))
 
-(t/deftest short-attributes
+(t/deftest literal-attributes
   (test-tmpl
     [.a]
     nil
@@ -278,11 +278,40 @@
     nil
     "<div id=\"b\" class=\"a\"></div>"))
 
-#_(t/deftest static-attrs
+(t/deftest static-attrs
+  (test-tmpl
+    [div {class "a"}]
+    nil
+    "<div class=\"a\"></div>"
+
+    [div {class a}]
+    nil
+    "<div class=\"a\"></div>"
+
+    [div {:class :a}]
+    nil
+    "<div class=\"a\"></div>"
+
+    [div {class #{a b}}]
+    nil
+    "<div class=\"a b\"></div>"
+
+    #_#_#_
+    nil true false
+
+    [div {class foo/a}]
+    nil
+    "<div class=\"a\"></div>"
+
+    [div {class :foo/a}]
+    nil
+    "<div class=\"a\"></div>"))
+
+#_(t/deftest merge-attrs
     (test-tmpl
-      [div {class "a"}]
+      [.a {class "b"}]
       nil
-      "<div class=\"a\"></div>"
+      "<div class=\"b\"></div>"
 
 
       ;; [] будут заняты под шаблон
@@ -296,17 +325,20 @@
       nil
       "<div class=\"a b\"></div>"))
 
-#_(t/deftest dynamic-attrs
-    (test-tmpl
-      [.a {class (:class)}]
-      {:class "b"}
-      "<div class=\"a b\"></div>"
+(t/deftest dynamic-attrs
+  (test-tmpl
+    [.a {class (:class)}]
+    {:class "b"}
+    "<div class=\"b\"></div>"
 
-      [.a {class (:class)
-           .     (:attrs)}]
-      {:class "b"
-       :attrs {'class "c"}}
-      "wtf?"))
+    ;; слишком сложно
+    #_[div {(:attr) "foo"}]
+
+    [.a {class (:class)
+         ...   :attrs}]
+    {:class "b"
+     :attrs {"class" "c"}}
+    "<div class=\"c\"></div>"))
 
 #_"
 или если в контексте лежит

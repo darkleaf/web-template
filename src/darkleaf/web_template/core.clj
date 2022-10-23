@@ -2,7 +2,9 @@
   (:refer-clojure :exclude [compile])
   (:require
    [clojure.string :as str]
-   [darkleaf.web-template.protocols :as p])
+   [darkleaf.web-template.protocols :as p]
+   [darkleaf.web-template.internal.tag :refer [parse-tag]]
+   [darkleaf.web-template.internal.attributes :refer [merge-attrs]])
   (:import
    (java.io Writer StringWriter)
    (darkleaf.web_template.protocols Template)))
@@ -49,35 +51,6 @@
 
 (declare compile)
 
-
-
-;; from https://github.com/r0man/sablono/blob/master/src/sablono/normalize.cljc
-(defn- strip-css
-  "Strip the # and . characters from the beginning of `s`."
-  [s]
-  (when s
-    (str/replace s #"^[.#]" "")))
-
-(defn- match-tag
-  "Match `s` as a CSS tag and return a vector of tag name, CSS id and
-  CSS classes."
-  [s]
-  (let [matches (re-seq #"[#.]?[^#.]+" (name s))
-        [tag-name names]
-        (cond (empty? matches)
-              (throw (ex-info (str "Can't match CSS tag: " s) {:tag s}))
-
-              (#{\# \.} (ffirst matches)) ;; shorthand for div
-              ["div" matches]
-
-              :default
-              [(first matches) (rest matches)])]
-    [tag-name
-     (strip-css (some #(when (= \# (first %1)) %1)  names))
-     (into []
-           (comp (filter #(= \. (first %1))) (map strip-css))
-           names)]))
-
 (defn ctx-push [ctx v]
   (merge ctx
          (if (map? v) v)
@@ -114,33 +87,38 @@
           (doseq [^Template item (interpose space body)]
             (.render item w ctx)))))))
 
-(defn- static-tag--no-attrs--body [[tag & body :as node]]
+(defn- tag-node [[tag :as node]]
   (when (and (vector? node)
-             (ident? tag)
-             (not (-> body first map?)))
-    (let [[^String tag id classes] (match-tag tag)
-          body                     (map compile body)]
+             (ident? tag))
+    (let [attrs?              (map? (nth node 1 nil))
+          attrs               (if attrs? (nth node 1 nil))
+          body                (nthnext node (if attrs? 2 1))
+          [tag literal-attrs] (parse-tag tag)
+          tag                 ^String tag
+          body                (mapv compile body)]
       (reify Template
         (render [_ w ctx]
-          (.append w "<")
-          (.append w tag)
-          (when id
-            (.append w " id=\"")
-            (.append w ^String id)
-            (.append w "\""))
-          (when (seq classes)
-            (.append w " class=\"")
-            (doseq [^String item (interpose " " classes)]
-              (.append w item))
-            (.append w "\""))
-          (.append w ">")
+          ;; todo: добавить случай для литеральных атрибутов,
+          ;; чтобы не мержжить все это в рантайме
+          (let [attrs (merge-attrs literal-attrs attrs ctx)]
+            (.append w "<")
+            (.append w tag)
+            (doseq [[^String attr value] attrs]
+              (.append w " ")
+              ;; todo: value = true
+              ;; todo: escape
+              (.append w attr)
+              (.append w "=\"")
+              (.append w (str value))
+              (.append w "\""))
+            (.append w ">")
 
-          (doseq [^Template item (interpose space body)]
-            (.render item w ctx))
+            (doseq [^Template item (interpose space body)]
+              (.render item w ctx))
 
-          (.append w "</")
-          (.append w tag)
-          (.append w ">"))))))
+            (.append w "</")
+            (.append w tag)
+            (.append w ">")))))))
 
 (defn- dynamic-node [node]
   (when (list? node)
@@ -172,7 +150,7 @@
     dot-node
     dynamic-node
     <>-node
-    static-tag--no-attrs--body))
+    tag-node))
 
 (defn render-to-string [^Template template data]
   (let [sw  (StringWriter.)

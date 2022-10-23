@@ -39,6 +39,9 @@
             v)]
     (add-value* ctx acc k v)))
 
+;; {... :attrs}
+;; {... (:attrs)} <- не поддерживается, но по идее должно, ну или исключение бросать
+
 (defn merge-attrs [literal attrs ctx]
   (let [dynamic-key (get attrs '...)
         dynamic     (if dynamic-key (get ctx dynamic-key))
