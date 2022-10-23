@@ -72,4 +72,8 @@
     {"class" "a"}
 
     {"class" "a"} {class (:class)} {:class (list "b")}
-    {"class" "a b"}))
+    {"class" "a b"}
+
+
+    nil {(:attr) 42} {:attr "my-attr"}
+    {"my-attr" "42"}))

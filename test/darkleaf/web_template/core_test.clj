@@ -331,8 +331,9 @@
     {:class "b"}
     "<div class=\"b\"></div>"
 
-    ;; слишком сложно
-    #_[div {(:attr) "foo"}]
+    [div {(:attr) "foo"}]
+    {:attr "class"}
+    "<div class=\"foo\"></div>"
 
     [.a {class (:class)
          ...   :attrs}]

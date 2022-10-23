@@ -34,7 +34,10 @@
       :else        (assoc acc k (str v)))))
 
 (defn- add-value [ctx acc k v]
-  (let [v (if (list? v)
+  (let [k (if (list? k)
+            (get ctx (first k))
+            k)
+        v (if (list? v)
             (get ctx (first v))
             v)]
     (add-value* ctx acc k v)))
