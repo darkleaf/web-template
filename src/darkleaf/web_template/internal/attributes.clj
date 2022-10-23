@@ -28,6 +28,7 @@
                                        (cons-some %)
                                        (str/join " ")))
       (seqable? v) (update acc k #(->> v
+                                       (filter some?)
                                        (map name)
                                        (cons-some %)
                                        (str/join " ")))
