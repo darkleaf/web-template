@@ -9,7 +9,7 @@
       attr-name)))
 
 (defn- cons-some [x seq]
-  (if x
+  (if (some? x)
     (cons x seq)
     seq))
 
