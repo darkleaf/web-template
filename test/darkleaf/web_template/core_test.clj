@@ -237,29 +237,6 @@
     "a"
     "a"))
 
-(t/deftest template-as-component-1
-  (let [layout (wt/compile
-                '[layout
-                  (:body {:param "xyz"})])
-        page   (wt/compile
-                '[page (:param)])]
-    (t/is (= "<layout><page>xyz</page></layout>"
-             (wt/render-to-string layout {:body page})))))
-
-(t/deftest template-as-component-3
-  (let [layout (wt/compile
-                '[layout
-                  (:body {:param "param"}
-                         "block"
-                         "inverted block")])
-        page   (wt/compile
-                '[page
-                  (:param)
-                  (:block)
-                  (:inverted-block)])]
-    (t/is (= "<layout><page>param block inverted block</page></layout>"
-             (wt/render-to-string layout {:body page})))))
-
 (t/deftest literal-attributes
   (test-tmpl
     [.a]
@@ -341,72 +318,37 @@
      :attrs {"class" "c"}}
     "<div class=\"c\"></div>"))
 
-(comment
-  [div {data-controller users/list-item}]
-  users--list-item)
+(t/deftest template-as-component-1
+  (let [layout (wt/compile
+                '[layout
+                  (:body {:param "xyz"})])
+        page   (wt/compile
+                '[page (:param)])]
+    (t/is (= "<layout><page>xyz</page></layout>"
+             (wt/render-to-string layout {:body page})))))
 
-;; вообще это больно "умно" будет, наверное не нужно так
-;; <div data-controller="gallery"
-;;                       ^^^^^^^
-;;      data-action="resize@window->gallery#layout">
-;;                                  ^^^^^^^ resize->user--list-item
-;; </div>
+(t/deftest template-as-component-3
+  (let [layout (wt/compile
+                '[layout
+                  (:body {:param "param"}
+                         "block"
+                         "inverted block")])
+        page   (wt/compile
+                '[page
+                  (:param)
+                  (:block)
+                  (:inverted-block)])]
+    (t/is (= "<layout><page>param block inverted block</page></layout>"
+             (wt/render-to-string layout {:body page})))))
 
-
-(comment
-  [div {... ...}
-   ...]
-
-  (comp
-   {... ...}
-   ...)
-
-  '(stimulus/controller
-    {name  user/search
-     class #{foo bar buz}}
-    :aaa (stimulus/target {tag li} xyz)
-    :bb (...))
-
-  '(^{:style/indent :defn} stimulus/controller {name  user/search
-                                                class #{foo bar buz}}
-    (stimulus/target {tag li} xyz))
-
-  ;; даже не смотря на ', если подключить wt, то cider считает :style/indent
-  '(wt/xyz {}
-     xxx)
-
-  '(defn xyz []
-     123))
-
-(comment
-  '(:layout {:sidebar [div ...
-                       [div ...]]
-             :body [div ...
-                    [div ...]]})
-
-  '[div {:class [foo bar]}]
-
-  '[div {:class #{foo bar}}]
-  '[.foo.bar])
-
-(comment
-  [div {class aa, id bb, ... attrs}
-   "a"
-   "b"]
-
-  [div class aa, id bb
-   & [<>
-      "block"
-      "inverted block"]
-   attrs]
-
-  (:users
-   {:separator ", ", ... attrs}
-   [.title (:title)]
-   "no users")
-
-  (:users
-   :separator ", "
-   & [.title (:title)]
-   | "no users"
-   attrs))
+(t/deftest compile-component-attrs
+  (let [layout (wt/compile
+                '[layout {class (:class)}
+                  [body (:body)]
+                  [sidebar (:sidebar)]])
+        tmpl   (wt/compile
+                '(:layout {:body    [div "body"]
+                           :sidebar [div "sidebar"]
+                           :class   #{a b}}))]
+    (t/is (= "<layout class=\"a b\"><body><div>body</div></body> <sidebar><div>sidebar</div></sidebar></layout>"
+             (wt/render-to-string tmpl {:layout layout})))))

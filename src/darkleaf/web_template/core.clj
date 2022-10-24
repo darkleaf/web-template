@@ -120,17 +120,23 @@
             (.append w tag)
             (.append w ">")))))))
 
+(defn- compile-attr-value [v]
+  (if (vector? v)
+    (compile v)
+    v))
+
 (defn- dynamic-node [node]
   (when (list? node)
     (let [key            (nth node 0 nil)
           attrs?         (map? (nth node 1 nil))
           attrs          (if attrs? (nth node 1 nil))
+          attrs          (update-vals attrs compile-attr-value)
           block          (-> node (nth (if attrs? 2 1) nil) compile)
           inverted-block (-> node (nth (if attrs? 3 2) nil) compile)
-          render'         (if (= (if attrs? 2 1)
-                                 (count node))
-                            p/render
-                            #(p/render %1 %2 %3 %4 block inverted-block))]
+          render'        (if (= (if attrs? 2 1)
+                                (count node))
+                           p/render
+                           #(p/render %1 %2 %3 %4 block inverted-block))]
       (reify Template
         (render [_ w ctx]
           (let [value (get ctx key)
