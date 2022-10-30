@@ -46,7 +46,15 @@
    [html
     [head ...]
     [body
-     (:body-component {} . "not found")]]])
+     (:body-component {} . "not found")]]]
+
+  (component [ctx]
+    (update ctx ....)
+    [div ...])
+  (component* (fn [ctx] ctx) tmpl)
+
+  (compile [div])
+  (compile* '[div]))
 
 (declare compile)
 
