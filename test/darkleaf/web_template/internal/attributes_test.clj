@@ -76,4 +76,11 @@
 
 
     nil {(:attr) 42} {:attr "my-attr"}
-    {"my-attr" "42"}))
+    {"my-attr" "42"}
+
+    nil {class {foo (:foo)}} {:foo true}
+    {"class" "foo"}
+
+    ;; todo
+    nil {class {foo (:foo)}} {:foo false}
+    {"class" ""}))

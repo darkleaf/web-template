@@ -1,5 +1,7 @@
 (ns darkleaf.web-template.internal.attributes
-  (:require [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]
+   [clojure.walk :as w]))
 
 (defn- attr-name [k]
   (let [attr-ns   (if (ident? k) (namespace k))
@@ -34,15 +36,17 @@
                                        (str/join " ")))
       :else        (assoc acc k (str v)))))
 
+(defn- ctx-resolve [ctx node]
+  (if (list? node)
+    (get ctx (first node))
+    node))
+
 ;; todo? default
 ;; [div {class (:class default-a default-b ...)} ...]
 (defn- resolve-attr [ctx acc k v]
-  (let [k (if (list? k)
-            (get ctx (first k))
-            k)
-        v (if (list? v)
-            (get ctx (first v))
-            v)]
+  (let [ctx-resolve (partial ctx-resolve ctx)
+        k           (w/prewalk ctx-resolve k)
+        v           (w/prewalk ctx-resolve v)]
     (assoc acc k v)))
 
 (defn resolve-attrs [ctx attrs]
