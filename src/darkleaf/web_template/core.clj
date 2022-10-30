@@ -4,7 +4,7 @@
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
-   [darkleaf.web-template.internal.attributes :refer [merge-attrs]])
+   [darkleaf.web-template.internal.attributes :refer [resolve-attrs merge-attrs]])
   (:import
    (java.io StringWriter)))
 
@@ -135,13 +135,14 @@
           attrs          (update-vals attrs compile-attr-value)
           block          (-> node (nth (if attrs? 2 1) nil) compile)
           inverted-block (-> node (nth (if attrs? 3 2) nil) compile)
-          render'        (if (= (if attrs? 2 1)
+          render         (if (= (if attrs? 2 1)
                                 (count node))
                            p/render
                            #(p/render %1 %2 %3 %4 block inverted-block))]
       (template [w ctx]
-        (let [value (get ctx key)]
-          (render' value w ctx attrs))))))
+        (let [component (get ctx key)
+              attrs     (resolve-attrs ctx attrs)]
+          (render component w ctx attrs))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
