@@ -12,5 +12,10 @@
     [this writer ctx attrs]
     [this writer ctx attrs block-tmpl inverted-block-tmpl]))
 
+(defn ctx-push [ctx v]
+  (merge ctx
+         (if (map? v) v)
+         {'. v}))
+
 (defn append [^Writer w ^String str]
   (.append w str))

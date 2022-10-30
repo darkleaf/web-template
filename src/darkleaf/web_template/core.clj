@@ -50,11 +50,6 @@
 
 (declare compile)
 
-(defn ctx-push [ctx v]
-  (merge ctx
-         (if (map? v) v)
-         {'. v}))
-
 (defmacro template
   {:style/indent :defn :private true}
   [[writer ctx] & body]
@@ -146,7 +141,7 @@
                            #(p/render %1 %2 %3 %4 block inverted-block))]
       (template [w ctx]
         (let [value (get ctx key)
-              ctx   (ctx-push ctx value)]
+              ctx   (p/ctx-push ctx value)]
           (render' value w ctx attrs))))))
 
 (defmacro chain-handlers
@@ -166,7 +161,7 @@
 
 (defn render-to-string [template data]
   (let [sw  (StringWriter.)
-        ctx (ctx-push nil data)]
+        ctx (p/ctx-push nil data)]
     (p/render-tmpl template sw ctx)
     (.toString sw)))
 
@@ -215,7 +210,7 @@
              separator #(p/append w separator)]
          (doseq [tmpl (interpose separator
                                  (for [item this
-                                       :let [ctx (ctx-push ctx item)]]
+                                       :let [ctx (p/ctx-push ctx item)]]
                                    #(p/render-tmpl block w ctx)))]
             (tmpl)))
        (p/render-tmpl inverted-block w ctx))))
