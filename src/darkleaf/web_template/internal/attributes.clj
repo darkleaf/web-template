@@ -13,7 +13,7 @@
     (cons x seq)
     seq))
 
-(defn- add-value* [ctx acc k v]
+(defn- add-value [ctx acc k v]
   (let [k (attr-name k)]
     (cond
       (nil? v)     acc
@@ -36,23 +36,24 @@
 
 ;; todo? default
 ;; [div {class (:class default-a default-b ...)} ...]
-(defn- add-value [ctx acc k v]
+(defn- resolve-attr [ctx acc k v]
   (let [k (if (list? k)
             (get ctx (first k))
             k)
         v (if (list? v)
             (get ctx (first v))
             v)]
-    (add-value* ctx acc k v)))
+    (assoc acc k v)))
 
-;; {... :attrs}
-;; {... (:attrs)} <- не поддерживается, но по идее должно, ну или исключение бросать
+(defn resolve-attrs [ctx attrs]
+  (reduce-kv (partial resolve-attr ctx)
+             {} attrs))
 
 (defn merge-attrs [literal attrs ctx]
-  (let [dynamic-key (get attrs '...)
-        dynamic     (if dynamic-key (get ctx dynamic-key))
-        attrs       (dissoc attrs '...)
-        add-value   (partial add-value ctx)
-        res         (reduce-kv add-value literal attrs)
-        res         (reduce-kv add-value res dynamic)]
+  (let [attrs     (resolve-attrs ctx attrs)
+        dynamic   (get attrs '...)
+        attrs     (dissoc attrs '...)
+        add-value (partial add-value ctx)
+        res       (reduce-kv add-value literal attrs)
+        res       (reduce-kv add-value res dynamic)]
     res))

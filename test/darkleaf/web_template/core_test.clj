@@ -318,7 +318,7 @@
     "<div class=\"foo\"></div>"
 
     [.a {class (:class)
-         ...   :attrs}]
+         ...   (:attrs)}]
     {:class "b"
      :attrs {"class" "c"}}
     "<div class=\"c\"></div>"))
