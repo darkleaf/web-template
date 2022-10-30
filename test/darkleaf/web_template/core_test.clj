@@ -15,6 +15,11 @@
     `(t/are [node# data# html#] (= html# (render (quote node#) data#))
        ~@body)))
 
+
+;; todo: inverted block ctx
+;; (:a . (:debug)))
+;; :debug is a component. It can access '. with is a {:a :value}
+
 (t/deftest static-test
   (test-tmpl
     "a"

@@ -140,8 +140,7 @@
                            p/render
                            #(p/render %1 %2 %3 %4 block inverted-block))]
       (template [w ctx]
-        (let [value (get ctx key)
-              ctx   (p/ctx-push ctx value)]
+        (let [value (get ctx key)]
           (render' value w ctx attrs))))))
 
 (defmacro chain-handlers
@@ -169,16 +168,16 @@
   nil
   (render
     ([this _ _ _])
-    ([_ w ctx attrs _ inverted-block]
-     (p/render-tmpl inverted-block w ctx)))
+    ([this w ctx attrs _ inverted-block]
+     (p/render-tmpl inverted-block w (p/ctx-push ctx this))))
 
   Object
   (render
     ([this w _ _]
      ;; todo: escape
      (p/append w (str this)))
-    ([_ w ctx attrs block _]
-     (p/render-tmpl block w ctx)))
+    ([this w ctx attrs block _]
+     (p/render-tmpl block w (p/ctx-push ctx this))))
 
   String
   (render
@@ -187,7 +186,7 @@
      (p/append w this))
     ([this w ctx attrs block inverted-block]
      (if-not (str/blank? this)
-       (p/render-tmpl block w ctx)
+       (p/render-tmpl block w (p/ctx-push ctx this))
        (p/render-tmpl inverted-block w ctx))))
 
   Boolean
@@ -196,7 +195,7 @@
      (p/append w (str this)))
     ([this w ctx attrs block inverted-block]
      (if this
-       (p/render-tmpl block w ctx)
+       (p/render-tmpl block w (p/ctx-push ctx this))
        (p/render-tmpl inverted-block w ctx))))
 
   clojure.lang.Sequential
@@ -209,9 +208,8 @@
        (let [separator (-> attrs (get :separator " ") str)
              separator #(p/append w separator)]
          (doseq [tmpl (interpose separator
-                                 (for [item this
-                                       :let [ctx (p/ctx-push ctx item)]]
-                                   #(p/render-tmpl block w ctx)))]
+                                 (for [item this]
+                                   #(p/render-tmpl block w (p/ctx-push ctx item))))]
             (tmpl)))
        (p/render-tmpl inverted-block w ctx))))
 
@@ -222,5 +220,5 @@
      (p/append w (str this)))
     ([this w ctx attrs block inverted-block]
      (if (seq this)
-       (p/render-tmpl block w ctx)
+       (p/render-tmpl block w (p/ctx-push ctx this))
        (p/render-tmpl inverted-block w ctx)))))
