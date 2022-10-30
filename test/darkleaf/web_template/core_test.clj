@@ -273,6 +273,10 @@
     nil
     "<div class=\"a\"></div>"
 
+    [div {class [a b]}]
+    nil
+    "<div class=\"a b\"></div>"
+
     [div {class #{a b}}]
     nil
     "<div class=\"a b\"></div>"
@@ -287,24 +291,6 @@
     [div {class :foo/a}]
     nil
     "<div class=\"a\"></div>"))
-
-#_(t/deftest merge-attrs
-    (test-tmpl
-      [.a {class "b"}]
-      nil
-      "<div class=\"b\"></div>"
-
-
-      ;; [] будут заняты под шаблон
-      ;; а атрибутам вроде как не важен порядок
-      #_#_#_
-      [div {class #{a b}}]
-      nil
-      "<div class=\"a\"></div>"
-
-      [.a {class "b"}]
-      nil
-      "<div class=\"a b\"></div>"))
 
 (t/deftest dynamic-attrs
   (test-tmpl
