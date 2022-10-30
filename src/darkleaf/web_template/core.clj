@@ -6,8 +6,7 @@
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.internal.attributes :refer [merge-attrs]])
   (:import
-   (java.io Writer StringWriter)
-   (darkleaf.web_template.protocols Template)))
+   (java.io StringWriter)))
 
 (set! *warn-on-reflection* true)
 
@@ -56,15 +55,26 @@
          (if (map? v) v)
          {'. v}))
 
+(defmacro template
+  {:style/indent :defn :private true}
+  [[writer ctx] & body]
+  `(reify
+     p/Template
+     (render-tmpl [this# ~writer ~ctx] ~@body)
+     p/Component
+     (render [this# w# ctx# attrs#]
+       (p/render-tmpl this# w# (merge ctx# attrs#)))
+     (render [this# w# ctx# attrs# block# inverted-block#]
+       (p/render-tmpl this# w# (merge ctx# attrs# {:block block#
+                                                   :inverted-block inverted-block#})))))
+
 (def ^:private space
-  (reify Template
-    (render [_ w ctx]
-      (.append w " "))))
+  (template [w ctx]
+    (p/append w " ")))
 
 (defn- nil-node [node]
   (when (nil? node)
-    (reify Template
-      (render [_ _ _]))))
+    (template [_ _])))
 
 (declare dynamic-node)
 
@@ -74,18 +84,16 @@
 
 (defn- string-node [node]
   (when (string? node)
-    (reify Template
-      (render [_ w ctx]
-        (.append w ^String node)))))
+    (template [w ctx]
+      (p/append w node))))
 
 (defn- <>-node [[tag & body :as node]]
   (when (and (vector? node)
              (= '<> tag))
     (let [body (map compile body)]
-      (reify Template
-        (render [_ w ctx]
-          (doseq [^Template item (interpose space body)]
-            (.render item w ctx)))))))
+      (template [w ctx]
+        (doseq [item (interpose space body)]
+          (p/render-tmpl item w ctx))))))
 
 (defn- tag-node [[tag :as node]]
   (when (and (vector? node)
@@ -96,29 +104,28 @@
           [tag literal-attrs] (parse-tag tag)
           tag                 ^String tag
           body                (mapv compile body)]
-      (reify Template
-        (render [_ w ctx]
-          ;; todo: добавить случай для литеральных атрибутов,
-          ;; чтобы не мержжить все это в рантайме
-          (let [attrs (merge-attrs literal-attrs attrs ctx)]
-            (.append w "<")
-            (.append w tag)
-            (doseq [[^String attr value] attrs]
-              (.append w " ")
-              ;; todo: value = true
-              ;; todo: escape
-              (.append w attr)
-              (.append w "=\"")
-              (.append w (str value))
-              (.append w "\""))
-            (.append w ">")
+      (template [w ctx]
+        ;; todo: добавить случай для литеральных атрибутов,
+        ;; чтобы не мержжить все это в рантайме
+        (let [attrs (merge-attrs literal-attrs attrs ctx)]
+          (p/append w "<")
+          (p/append w tag)
+          (doseq [[attr value] attrs]
+            (p/append w " ")
+            ;; todo: value = true
+            ;; todo: escape
+            (p/append w attr)
+            (p/append w "=\"")
+            (p/append w (str value))
+            (p/append w "\""))
+          (p/append w ">")
 
-            (doseq [^Template item (interpose space body)]
-              (.render item w ctx))
+          (doseq [item (interpose space body)]
+            (p/render-tmpl item w ctx))
 
-            (.append w "</")
-            (.append w tag)
-            (.append w ">")))))))
+          (p/append w "</")
+          (p/append w tag)
+          (p/append w ">"))))))
 
 (defn- compile-attr-value [v]
   (if (vector? v)
@@ -137,11 +144,10 @@
                                 (count node))
                            p/render
                            #(p/render %1 %2 %3 %4 block inverted-block))]
-      (reify Template
-        (render [_ w ctx]
-          (let [value (get ctx key)
-                ctx   (ctx-push ctx value)]
-            (render' value w ctx attrs)))))))
+      (template [w ctx]
+        (let [value (get ctx key)
+              ctx   (ctx-push ctx value)]
+          (render' value w ctx attrs))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
@@ -158,77 +164,68 @@
     <>-node
     tag-node))
 
-(defn render-to-string [^Template template data]
+(defn render-to-string [template data]
   (let [sw  (StringWriter.)
         ctx (ctx-push nil data)]
-    (.render template sw ctx)
+    (p/render-tmpl template sw ctx)
     (.toString sw)))
 
 (extend-protocol p/Component
-  Template
-  (render
-    ([this ^Writer w ctx attrs]
-     (.render this w (merge ctx attrs)))
-    ([this w ctx attrs block inverted-block]
-     (p/render this w
-               (assoc ctx :block block :inverted-block inverted-block)
-               attrs)))
-
   nil
   (render
     ([this _ _ _])
-    ([_ w ctx attrs _ ^Template inverted-block]
-     (.render inverted-block w ctx)))
+    ([_ w ctx attrs _ inverted-block]
+     (p/render-tmpl inverted-block w ctx)))
 
   Object
   (render
-    ([this ^Writer w _ _]
+    ([this w _ _]
      ;; todo: escape
-     (.append w (str this)))
-    ([_ w ctx attrs ^Template block _]
-     (.render block w ctx)))
+     (p/append w (str this)))
+    ([_ w ctx attrs block _]
+     (p/render-tmpl block w ctx)))
 
   String
   (render
-    ([this ^Writer w ctx attrs]
+    ([this w ctx attrs]
      ;; todo: escape
-     (.append w this))
-    ([this w ctx attrs ^Template block ^Template inverted-block]
+     (p/append w this))
+    ([this w ctx attrs block inverted-block]
      (if-not (str/blank? this)
-       (.render block w ctx)
-       (.render inverted-block w ctx))))
+       (p/render-tmpl block w ctx)
+       (p/render-tmpl inverted-block w ctx))))
 
   Boolean
   (render
-    ([this ^Writer w ctx attrs]
-     (.append w (str this)))
-    ([this w ctx attrs ^Template block ^Template inverted-block]
+    ([this w ctx attrs]
+     (p/append w (str this)))
+    ([this w ctx attrs block inverted-block]
      (if this
-       (.render block w ctx)
-       (.render inverted-block w ctx))))
+       (p/render-tmpl block w ctx)
+       (p/render-tmpl inverted-block w ctx))))
 
   clojure.lang.Sequential
   (render
-    ([this ^Writer w ctx attrs]
+    ([this w ctx attrs]
      ;; todo: escape
-     (.append w (str this)))
-    ([this ^Writer w ctx attrs ^Template block ^Template inverted-block]
+     (p/append w (str this)))
+    ([this w ctx attrs block inverted-block]
      (if (seq this)
        (let [separator (-> attrs (get :separator " ") str)
-             separator #(.append w separator)]
+             separator #(p/append w separator)]
          (doseq [tmpl (interpose separator
                                  (for [item this
                                        :let [ctx (ctx-push ctx item)]]
-                                   #(.render block w ctx)))]
+                                   #(p/render-tmpl block w ctx)))]
             (tmpl)))
-       (.render inverted-block w ctx))))
+       (p/render-tmpl inverted-block w ctx))))
 
   clojure.lang.IPersistentMap
   (render
-    ([this ^Writer w ctx attrs]
+    ([this w ctx attrs]
      ;; todo: escape
-     (.append w (str this)))
-    ([this w ctx attrs ^Template block ^Template inverted-block]
+     (p/append w (str this)))
+    ([this w ctx attrs block inverted-block]
      (if (seq this)
-       (.render block w ctx)
-       (.render inverted-block w ctx)))))
+       (p/render-tmpl block w ctx)
+       (p/render-tmpl inverted-block w ctx)))))
