@@ -123,7 +123,7 @@
           (p/append w ">"))))))
 
 (defn- compile-attr-value [v]
-  (if (vector? v)
+  (if (-> v meta :tmpl)
     (compile v)
     v))
 
@@ -207,8 +207,8 @@
      (p/append w (str this)))
     ([this w ctx attrs block inverted-block]
      (if (seq this)
-       (let [separator (-> attrs (get :separator " ") str)
-             separator #(p/append w separator)]
+       (let [separator (get attrs :separator space)
+             separator #(p/render-tmpl separator w ctx)]
          (doseq [tmpl (interpose separator
                                  (for [item this]
                                    #(p/render-tmpl block w (p/ctx-push ctx item))))]
@@ -224,3 +224,9 @@
      (if (seq this)
        (p/render-tmpl block w (p/ctx-push ctx this))
        (p/render-tmpl inverted-block w ctx)))))
+
+(extend-protocol p/Template
+  String
+  (render-tmpl [this w _]
+    ;; todo: escape
+    (p/append w this)))

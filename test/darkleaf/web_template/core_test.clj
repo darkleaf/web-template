@@ -130,7 +130,12 @@
 
     (. {:separator ", "} .)
     ["a" "b"]
-    "a, b"))
+    "a, b"
+
+    (. {:separator ^:tmpl [br]} .)
+    ["a" "b"]
+    ;; todo
+    "a<br></br>b"))
 
 (t/deftest map-test
   (test-tmpl
@@ -346,8 +351,8 @@
                   [body (:body)]
                   [sidebar (:sidebar)]])
         tmpl   (wt/compile
-                '(:layout {:body    [div "body"]
-                           :sidebar [div "sidebar"]
-                           :class   #{a b}}))]
+                '(:layout {:body    ^:tmpl [div "body"]
+                           :sidebar ^:tmpl [div "sidebar"]
+                           :class   [a b]}))]
     (t/is (= "<layout class=\"a b\"><body><div>body</div></body> <sidebar><div>sidebar</div></sidebar></layout>"
              (wt/render-to-string tmpl {:layout layout})))))
