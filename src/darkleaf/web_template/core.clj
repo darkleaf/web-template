@@ -159,11 +159,12 @@
     <>-node
     tag-node))
 
-(defn render-to-string [template data]
-  (let [sw  (StringWriter.)
-        ctx (p/ctx-push nil data)]
-    (p/render-tmpl template sw ctx)
-    (.toString sw)))
+(defn render-to-string
+  ([template data] (render-to-string template nil data))
+  ([template ctx data]
+   (let [sw  (StringWriter.)]
+     (p/render-tmpl template sw (p/ctx-push ctx data))
+     (.toString sw))))
 
 (extend-protocol p/Component
   nil

@@ -1,7 +1,7 @@
 (ns darkleaf.web-template.core-test
   (:require
-   [darkleaf.web-template.core :as wt]
-   [clojure.test :as t]))
+   [clojure.test :as t]
+   [darkleaf.web-template.core :as wt]))
 
 (defn- render [node data]
   (let [tmpl (wt/compile node)]
@@ -180,12 +180,6 @@
     []
     '()
     {}))
-
-#_(t/deftest format-test
-    (test-tmpl
-      (. {:format "%b"})
-      nil
-      "false"))
 
 (t/deftest branch-ctx-test
   (t/are [active? html] (= html (render '(:active? (:login) (:error-msg))
