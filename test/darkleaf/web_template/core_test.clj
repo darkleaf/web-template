@@ -42,6 +42,16 @@
     nil
     "<div><div></div></div>"))
 
+(t/deftest body-test
+  (test-tmpl
+   [div "a"]
+   nil
+   "<div>a</div>"
+
+   [div 1]
+   nil
+   "<div>1</div>"))
+
 (t/deftest nil-test
   (test-tmpl
     .

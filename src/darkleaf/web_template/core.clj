@@ -79,8 +79,13 @@
 
 (defn- string-node [node]
   (when (string? node)
-    (template [w ctx]
+    (template [w _]
       (p/append w node))))
+
+(defn- number-node [node]
+  (when (number? node)
+    (template [w _]
+      (p/append w (str node)))))
 
 (defn- <>-node [[tag & body :as node]]
   (when (and (vector? node)
@@ -154,6 +159,7 @@
   (chain-handlers node
     nil-node
     string-node
+    number-node
     dot-node
     dynamic-node
     <>-node
