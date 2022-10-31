@@ -60,7 +60,7 @@
   (compile [div])
   (compile* '[div]))
 
-(declare compile)
+(declare compile*)
 
 (defmacro template
   {:style/indent :defn :private true}
@@ -102,7 +102,7 @@
 (defn- <>-node [[tag & body :as node]]
   (when (and (vector? node)
              (= '<> tag))
-    (let [body (map compile body)]
+    (let [body (map compile* body)]
       (template [w ctx]
         (doseq [item (interpose space body)]
           (p/render-tmpl item w ctx))))))
@@ -115,7 +115,7 @@
           body                (nthnext node (if attrs? 2 1))
           [tag literal-attrs] (parse-tag tag)
           tag                 ^String tag
-          body                (mapv compile body)]
+          body                (mapv compile* body)]
       (template [w ctx]
         ;; todo: добавить случай для литеральных атрибутов,
         ;; чтобы не мержжить все это в рантайме
@@ -139,9 +139,9 @@
           (p/append w tag)
           (p/append w ">"))))))
 
-(defn- compile-attr-value [v]
+(defn- compile*-attr-value [v]
   (if (-> v meta :tmpl)
-    (compile v)
+    (compile* v)
     v))
 
 (defn- dynamic-node [node]
@@ -149,9 +149,9 @@
     (let [key            (nth node 0 nil)
           attrs?         (map? (nth node 1 nil))
           attrs          (if attrs? (nth node 1 nil))
-          attrs          (update-vals attrs compile-attr-value)
-          block          (-> node (nth (if attrs? 2 1) nil) compile)
-          inverted-block (-> node (nth (if attrs? 3 2) nil) compile)
+          attrs          (update-vals attrs compile*-attr-value)
+          block          (-> node (nth (if attrs? 2 1) nil) compile*)
+          inverted-block (-> node (nth (if attrs? 3 2) nil) compile*)
           render         (if (= (if attrs? 2 1)
                                 (count node))
                            p/render
@@ -167,7 +167,7 @@
   `(or ~@(for [h handlers]
            `(~h ~node-binding))))
 
-(defn compile [node]
+(defn compile* [node]
   (chain-handlers node
     nil-node
     string-node
@@ -176,6 +176,9 @@
     dynamic-node
     <>-node
     tag-node))
+
+(defmacro compile [node]
+  `(compile* (quote ~node)))
 
 (defn render-to-string
   ([template data] (render-to-string template nil data))

@@ -5,7 +5,7 @@
    [darkleaf.web-template.protocols :as p]))
 
 (defn- render [node data]
-  (let [tmpl (wt/compile node)]
+  (let [tmpl (wt/compile* node)]
     (wt/render-to-string tmpl data)))
 
 (defmacro test-tmpl
@@ -13,7 +13,9 @@
    :style/indent :defn}
   [& body]
   (when (seq body)
-    `(t/are [node# data# html#] (= html# (render (quote node#) data#))
+    `(t/are [dsl# data# html#] (= html#
+                                  (wt/render-to-string
+                                   (wt/compile dsl#) data#))
        ~@body)))
 
 
@@ -341,35 +343,35 @@
 
 (t/deftest template-as-component-1
   (let [layout (wt/compile
-                '[layout
-                  (:body {:param "xyz"})])
+                [layout
+                 (:body {:param "xyz"})])
         page   (wt/compile
-                '[page (:param)])]
+                [page (:param)])]
     (t/is (= "<layout><page>xyz</page></layout>"
              (wt/render-to-string layout {:body page})))))
 
 (t/deftest template-as-component-3
   (let [layout (wt/compile
-                '[layout
-                  (:body {:param "param"}
-                         "block"
-                         "inverted block")])
+                [layout
+                 (:body {:param "param"}
+                        "block"
+                        "inverted block")])
         page   (wt/compile
-                '[page
-                  (:param)
-                  (:block)
-                  (:inverted-block)])]
+                [page
+                 (:param)
+                 (:block)
+                 (:inverted-block)])]
     (t/is (= "<layout><page>param block inverted block</page></layout>"
              (wt/render-to-string layout {:body page})))))
 
 (t/deftest compile-component-attrs
   (let [layout (wt/compile
-                '[layout {class (:class)}
-                  [body (:body)]
-                  [sidebar (:sidebar)]])
+                [layout {class (:class)}
+                 [body (:body)]
+                 [sidebar (:sidebar)]])
         tmpl   (wt/compile
-                '(:layout {:body    ^:tmpl [div "body"]
-                           :sidebar ^:tmpl [div "sidebar"]
-                           :class   [a b]}))]
+                (:layout {:body    ^:tmpl [div "body"]
+                          :sidebar ^:tmpl [div "sidebar"]
+                          :class   [a b]}))]
     (t/is (= "<layout class=\"a b\"><body><div>body</div></body> <sidebar><div>sidebar</div></sidebar></layout>"
              (wt/render-to-string tmpl {:layout layout})))))
