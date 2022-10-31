@@ -48,10 +48,14 @@
     [body
      (:body-component {} . "not found")]]]
 
-  (component [ctx]
+  (component [attrs ctx]
     (update ctx ....)
     [div ...])
   (component* (fn [ctx] ctx) tmpl)
+
+  ;; (fn [attrs ctx] -> ctx) as component
+  ;; (assoc ctx '. ...)
+
 
   (compile [div])
   (compile* '[div]))
