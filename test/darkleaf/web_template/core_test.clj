@@ -1,7 +1,8 @@
 (ns darkleaf.web-template.core-test
   (:require
    [clojure.test :as t]
-   [darkleaf.web-template.core :as wt]))
+   [darkleaf.web-template.core :as wt]
+   [darkleaf.web-template.protocols :as p]))
 
 (defn- render [node data]
   (let [tmpl (wt/compile node)]
@@ -185,6 +186,26 @@
       (. . "empty")
       obj
       "obj")))
+
+(t/deftest fn-test
+  (test-tmpl
+    .
+    (fn [_ _]
+      42)
+    "42"
+
+    (:a (:fmt {:fmt "a: %s"}))
+    {:a   "xyz"
+     :fmt (fn [{this '.} {:keys [fmt]}]
+            (format fmt this))}
+    "a: xyz"
+
+    (:a (:fmt {:fmt "a: %s"}
+              [div .]))
+    {:a   "xyz"
+     :fmt (fn [{this '.} {:keys [fmt]}]
+            (format fmt this))}
+    "<div>a: xyz</div>"))
 
 (t/deftest default-inverted-block-test
   (t/are [data] (= "" (render '(. "block")

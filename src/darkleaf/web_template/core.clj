@@ -241,7 +241,14 @@
     ([this w ctx attrs block inverted-block]
      (if (seq this)
        (p/render-tmpl block w (p/ctx-push ctx this))
-       (p/render-tmpl inverted-block w ctx)))))
+       (p/render-tmpl inverted-block w ctx))))
+
+  clojure.lang.AFunction
+  (render
+    ([this w ctx attrs]
+     (p/render (this ctx attrs) w ctx attrs))
+    ([this w ctx attrs block inverted-block]
+     (p/render (this ctx attrs) w ctx attrs block inverted-block))))
 
 (extend-protocol p/Template
   String
