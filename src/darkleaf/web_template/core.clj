@@ -266,7 +266,7 @@
        (p/render-tmpl block w (p/ctx-push ctx this))
        (p/render-tmpl inverted-block w ctx))))
 
-  clojure.lang.AFunction
+  clojure.lang.Fn
   (render
     ([this w ctx attrs]
      (p/render (this ctx attrs) w ctx attrs))
