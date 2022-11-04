@@ -219,27 +219,6 @@
 (defmacro compile [node]
   `(compile* (quote ~node)))
 
-(defn component* [f tmpl]
-  (reify
-    p/Component
-    (render [_ w ctx attrs]
-      (p/render-tmpl tmpl w (-> ctx
-                                (p/ctx-push (f ctx attrs))
-                                (merge attrs))))
-    ;; если nil, то рендерить inverted-block?
-    (render [_ w ctx attrs block inverted-block]
-      (p/render-tmpl tmpl w (-> ctx
-                                (p/ctx-push (f ctx attrs))
-                                (merge attrs)
-                                (assoc :block block :inverted-block inverted-block))))))
-
-(defmacro component
-  {:style/indent :defn}
-  [[ctx attrs] body node]
-  `(component*
-    (fn [~ctx ~attrs] ~body)
-    (compile ~node)))
-
 (defn render-to-string
   ([template data] (render-to-string template nil data))
   ([template ctx data]

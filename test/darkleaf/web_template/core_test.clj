@@ -346,12 +346,3 @@
                           :class   [a b]}))]
     (t/is (= "<layout class=\"a b\"><body><div>body</div></body> <sidebar><div>sidebar</div></sidebar></layout>"
              (wt/render-to-string tmpl {:layout layout})))))
-
-(t/deftest component-test
-  (let [component (wt/component [{this '.} _]
-                    (format "this: %s" this)
-                    [div .])]
-    (t/is (= "<div>this: 42</div>" (render
-                                    '(:value
-                                      (:component))
-                                    {:component component :value 42})))))
