@@ -139,16 +139,7 @@
 
     (. . "empty")
     []
-    "empty"
-
-    (. {:separator ", "} .)
-    ["a" "b"]
-    "a, b"
-
-    (. {:separator ^:tmpl [br]} .)
-    ["a" "b"]
-    ;; todo
-    "a<br></br>b"))
+    "empty"))
 
 (t/deftest map-test
   (test-tmpl
@@ -188,26 +179,6 @@
       (. . "empty")
       obj
       "obj")))
-
-(t/deftest fn-test
-  (test-tmpl
-    .
-    (fn [_ _]
-      42)
-    "42"
-
-    (:a (:fmt {:fmt "a: %s"}))
-    {:a   "xyz"
-     :fmt (fn [{this '.} {:keys [fmt]}]
-            (format fmt this))}
-    "a: xyz"
-
-    (:a (:fmt {:fmt "a: %s"}
-              [div .]))
-    {:a   "xyz"
-     :fmt (fn [{this '.} {:keys [fmt]}]
-            (format fmt this))}
-    "<div>a: xyz</div>"))
 
 (t/deftest default-inverted-block-test
   (t/are [data] (= "" (render '(. "block")
