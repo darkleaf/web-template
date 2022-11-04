@@ -95,6 +95,19 @@
 
   ^:blank (:tags "no tags")
 
+  (:tags)
+  (:tags str)
+
+  (:tags (.))
+  (:tags blank? "to tags")
+  (:tags (format "") .)
+
+  (defn format [obj key & args])
+
+  (:price (i18n)) (i18n 42 :price)
+
+  (:price (i18n :foo/price)) (i18n 42 :price :foo/price)
+  (:price (i18n :foo/price (:currency))) (i18n 42 :price :foo/price :rub)
 
   (compile [div])
   (compile* '[div]))
@@ -106,13 +119,14 @@
   [[writer ctx] & body]
   `(reify
      p/Template
-     (render-tmpl [this# ~writer ~ctx] ~@body)
+     (render-tmpl [this# ~writer ~ctx]
+       ~@body)
      p/Component
-     (render [this# w# ctx# attrs#]
-       (p/render-tmpl this# w# (merge ctx# attrs#)))
-     (render [this# w# ctx# attrs# block# inverted-block#]
-       (p/render-tmpl this# w# (merge ctx# attrs# {:block block#
-                                                   :inverted-block inverted-block#})))))
+     (render [this# w# ctx#]
+       (.render-tmpl this# w# ctx#))
+     (render-present [this# w# ctx# block#]
+       (.render this# w# (assoc ctx# :block block#)))
+     (render-blank [this# w# ctx# block#])))
 
 (def ^:private space
   (template [w ctx]
@@ -141,6 +155,9 @@
 (defn- <>-node [[tag & body :as node]]
   (when (and (vector? node)
              (= '<> tag))
+
+    (-> body second meta prn)
+
     (let [body (map compile* body)]
       (template [w ctx]
         (doseq [item (interpose space body)]
@@ -178,27 +195,18 @@
           (p/append w tag)
           (p/append w ">"))))))
 
-(defn- compile*-attr-value [v]
-  (if (-> v meta :tmpl)
-    (compile* v)
-    v))
-
+;; todo: 3 отдельных обработчика
 (defn- dynamic-node [node]
   (when (list? node)
-    (let [key            (nth node 0 nil)
-          attrs?         (map? (nth node 1 nil))
-          attrs          (if attrs? (nth node 1 nil))
-          attrs          (update-vals attrs compile*-attr-value)
-          block          (-> node (nth (if attrs? 2 1) nil) compile*)
-          inverted-block (-> node (nth (if attrs? 3 2) nil) compile*)
-          render         (if (= (if attrs? 2 1)
-                                (count node))
-                           p/render
-                           #(p/render %1 %2 %3 %4 block inverted-block))]
+    (let [key    (nth node 0 nil)
+          block  (-> node second compile*)
+          render (cond
+                   (= 1 (count node))    p/render
+                   (-> node meta :blank) #(p/render-blank %1 %2 %3 block)
+                   :else                 #(p/render-present %1 %2 %3 block))]
       (template [w ctx]
-        (let [component (get ctx key)
-              attrs     (resolve-attrs ctx attrs)]
-          (render component w ctx attrs))))))
+        (let [component (get ctx key)]
+          (render component w ctx))))))
 
 (defmacro chain-handlers
   {:private true :style/indent :defn}
@@ -228,59 +236,60 @@
 
 (extend-protocol p/Component
   nil
-  (render
-    ([this _ _ _])
-    ([this w ctx attrs _ inverted-block]
-     (p/render-tmpl inverted-block w (p/ctx-push ctx this))))
+  (render [this _ _])
+  (render-present [_ _ _ _])
+  (render-blank [this w ctx block]
+    (p/render-tmpl block w (p/ctx-push ctx this)))
 
   Object
-  (render
-    ([this w _ _]
-     ;; todo: escape
-     (p/append w (str this)))
-    ([this w ctx attrs block _]
-     (p/render-tmpl block w (p/ctx-push ctx this))))
+  (render [this w _]
+    ;; todo: escape
+    (p/append w (str this)))
+  (render-present [this w ctx block]
+    (p/render-tmpl block w (p/ctx-push ctx this)))
+  (render-blank [_ _ _ _])
 
   String
-  (render
-    ([this w ctx attrs]
-     ;; todo: escape
-     (p/append w this))
-    ([this w ctx attrs block inverted-block]
-     (if-not (str/blank? this)
-       (p/render-tmpl block w (p/ctx-push ctx this))
-       (p/render-tmpl inverted-block w ctx))))
+  (render [this w ctx]
+    ;; todo: escape
+    (p/append w this))
+  (render-present [this w ctx block]
+    (if-not (str/blank? this)
+      (p/render-tmpl block w (p/ctx-push ctx this))))
+  (render-blank [this w ctx block]
+    (if (str/blank? this)
+      (p/render-tmpl block w (p/ctx-push ctx this))))
 
   Boolean
-  (render
-    ([this w ctx attrs]
-     (p/append w (str this)))
-    ([this w ctx attrs block inverted-block]
-     (if this
-       (p/render-tmpl block w (p/ctx-push ctx this))
-       (p/render-tmpl inverted-block w ctx))))
+  (render [this w ctx]
+    (p/append w (str this)))
+  (render-present [this w ctx block]
+    (if this
+      (p/render-tmpl block w (p/ctx-push ctx this))))
+  (render-blank [this w ctx block]
+    (if-not this
+      (p/render-tmpl block w ctx)))
 
   clojure.lang.Sequential
-  (render
-    ([this w ctx attrs]
-     ;; todo: escape
-     (p/append w (str this)))
-    ([this w ctx attrs block inverted-block]
-     (if (seq this)
-       (let [separator (get attrs :separator space)
-             separator #(p/render-tmpl separator w ctx)]
-         (doseq [tmpl (interpose separator
-                                 (for [item this]
-                                   #(p/render-tmpl block w (p/ctx-push ctx item))))]
-            (tmpl)))
-       (p/render-tmpl inverted-block w ctx))))
+  (render [this w ctx]
+    ;; todo: escape
+    (p/append w (str this)))
+  (render-present [this w ctx block]
+    (if (seq this)
+      (doseq [item this]
+        (p/render-tmpl block w (p/ctx-push ctx item))
+        (p/append w " "))))
+  (render-blank [this w ctx block]
+    (if (empty? this)
+      (p/render-tmpl block w ctx)))
 
   clojure.lang.IPersistentMap
-  (render
-    ([this w ctx attrs]
-     ;; todo: escape
-     (p/append w (str this)))
-    ([this w ctx attrs block inverted-block]
-     (if (seq this)
-       (p/render-tmpl block w (p/ctx-push ctx this))
-       (p/render-tmpl inverted-block w ctx)))))
+  (render [this w ctx]
+    ;; todo: escape
+    (p/append w (str this)))
+  (render-present [this w ctx block]
+    (if (seq this)
+      (p/render-tmpl block w (p/ctx-push ctx this))))
+  (render-blank [this w ctx block]
+    (if (empty? this)
+      (p/render-tmpl block w ctx))))

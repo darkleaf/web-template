@@ -61,13 +61,13 @@
     nil
     ""
 
-    (. .)
+    (. "present")
     nil
     ""
 
-    (. "a" "b")
+    ^:blank (. "blank")
     nil
-    "b"))
+    "blank"))
 
 (t/deftest string-test
   (test-tmpl
@@ -75,19 +75,21 @@
     "a"
     "a"
 
-    (. .)
+    (. "present")
     "a"
-    "a"
+    "present"
 
-    (. . "b")
-    "a"
-    "a"
-
-    (. . "b")
+    (. "present")
     ""
-    "b"
+    ""
 
-    #_(. {:escape false} . "not-found")))
+    ^:blank (. "blank")
+    ""
+    "blank"
+
+    ^:blank (. "blank")
+    "a"
+    ""))
 
 (t/deftest boolean-test
   (test-tmpl
@@ -99,17 +101,21 @@
     false
     "false"
 
-    (. .)
+    (. "present")
     true
-    "true"
+    "present"
 
-    (. "a" "b")
-    true
-    "a"
-
-    (. "a" "b")
+    (. "present")
     false
-    "b"))
+    ""
+
+    ^:blank (. "blank")
+    false
+    "blank"
+
+    ^:blank (. "blank")
+    true
+    ""))
 
 (t/deftest seq-test
   (test-tmpl
@@ -129,17 +135,21 @@
     (list true)
     "(true)"
 
-    (. .)
+    (. "present")
     [true false]
-    "true false"
+    "present present "
 
-    (. . "empty")
+    ^:blank (. "blank")
     [true false]
-    "true false"
+    ""
 
-    (. . "empty")
+    ^:blank (. "blank")
     []
-    "empty"))
+    "blank"
+
+    ^:blank (. "blank")
+    [true false]
+    ""))
 
 (t/deftest map-test
   (test-tmpl
@@ -155,13 +165,21 @@
     {:a "value"}
     "value"
 
-    (. (:a) "empty")
+    (. (:a))
     {:a "value"}
     "value"
 
-    (. (:a) "empty")
+    (. (:a))
     {}
-    "empty"))
+    ""
+
+    ^:blank (. "blank")
+    {}
+    "blank"
+
+    ^:blank (. "blank")
+    {:a "value"}
+    ""))
 
 (t/deftest object-test
   (let [obj (reify Object
@@ -172,13 +190,13 @@
       obj
       "obj"
 
-      (. .)
+      (. "present")
       obj
-      "obj"
+      "present"
 
-      (. . "empty")
+      ^:blank (. "blank")
       obj
-      "obj")))
+      "")))
 
 (t/deftest default-inverted-block-test
   (t/are [data] (= "" (render '(. "block")
@@ -190,25 +208,43 @@
     '()
     {}))
 
+(def tmpl
+  (wt/compile
+   ^:blank (. "blank")))
+
+(let [x (quote ^:x (1 2 3))]
+  (meta x))
+
 (t/deftest branch-ctx-test
-  (t/are [active? html] (= html (render '(:active? (:login) (:error-msg))
-                                        {:active?   active?
-                                         :login     "john"
-                                         :error-msg "not active"}))
+  (t/are [active? html]
+      (= html
+         #_(let [;#_#_
+                 tmpl
+                 #_#_
+                 tmpl tmpl
+                 data  false
+                 #_ {:active?   active?
+                     :login     "john"
+                     :error-msg "not active"}])
+         42
+         (wt/render-to-string
+          (wt/compile
+           ^:blank (. "blank"))
+          false))
     true
     "john"
 
     false
-    "not active"
-
-    ""
-    "not active"
-
-    []
-    "not active"
-
-    {}
     "not active"))
+
+    ;; ""
+    ;; "not active"
+
+    ;; []
+    ;; "not active"
+
+    ;; {}
+    ;; "not active"))
 
 (t/deftest case-0-test
   (test-tmpl

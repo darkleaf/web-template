@@ -8,9 +8,9 @@
   (render-tmpl [this writer ctx]))
 
 (defprotocol Component
-  (render
-    [this writer ctx attrs]
-    [this writer ctx attrs block-tmpl inverted-block-tmpl]))
+  (render [this writer ctx])
+  (render-present [this writer ctx block])
+  (render-blank [this writer ctx block]))
 
 (defn ctx-push [ctx v]
   (merge ctx
