@@ -15,6 +15,22 @@
   [tag {} & body]
   [.class.klass#id {. :attrs, class "xyz"} & body]
 
+
+  ;; object template через интерфейс, а не компилировать
+
+
+  (:tags)
+  (:tags {:separator ^:compile [br]} .)
+  (:tags . [br])
+  ^:blank (:tags "no tags")
+
+  (component [this attrs & body]
+    (when ...
+      ...)
+    [:div ...])
+  (:component {} :a :b :c :d)
+
+
   (:key (:attrs) nil nil)
   (:key (:attrs) block nil)
   (:key (:attrs) block inverted-block)
@@ -55,6 +71,29 @@
 
   ;; (fn [attrs ctx] -> ctx) as component
   ;; (assoc ctx '. ...)
+
+
+  (fn [ctx args]
+    (-> ctx
+        (p/ctx-push {:a 1 :b 2})
+        (p/ctx-push tmpl)))
+
+  (ctx, args) -> [ctx' obj]
+
+
+
+  [args? block & {:as block-args}]
+  (:foo
+   {:a 1}
+   [div block]
+   :b [div block]
+   :b [div block])
+
+  (:tags {:separator ", "} .)
+  (:tags . :separator ", ")
+  (:tags . :separator [br])
+
+  ^:blank (:tags "no tags")
 
 
   (compile [div])
@@ -187,6 +226,7 @@
       (p/render-tmpl tmpl w (-> ctx
                                 (p/ctx-push (f ctx attrs))
                                 (merge attrs))))
+    ;; если nil, то рендерить inverted-block?
     (render [_ w ctx attrs block inverted-block]
       (p/render-tmpl tmpl w (-> ctx
                                 (p/ctx-push (f ctx attrs))
