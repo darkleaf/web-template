@@ -27,23 +27,13 @@
   `(or ~@(for [h handlers]
            `(~h ~node-binding))))
 
-(defmacro renderable
-  {:private      true
-   :style/indent :defn}
-  [[writer ctx] & body]
-  `(reify
-     #_#_
-     p/Element
-     (compile [this] this)
-     p/Renderable
-     (render [this# ~writer ~ctx] ~@body)))
-
 (defn- vector-<>-element [[tag & body :as node]]
    (when (= '<> tag)
      (let [body (map p/compile body)]
-       (renderable [w ctx]
-         (doseq [item (interpose " " body)]
-           (p/render item w ctx))))))
+       (reify p/Renderable
+         (render [_ w ctx]
+           (doseq [item (interpose " " body)]
+             (p/render item w ctx)))))))
 
 (defn- vector-tag-element [[tag :as node]]
   (when (ident? tag) ;; todo? string
@@ -53,27 +43,28 @@
           [tag literal-attrs] (parse-tag tag)
           tag                 ^String tag
           body                (mapv p/compile body)]
-      (renderable [w ctx]
+      (reify p/Renderable
+        (render [_ w ctx]
         ;; todo: добавить случай для литеральных атрибутов,
         ;; чтобы не мержжить все это в рантайме
-        (let [attrs (merge-attrs literal-attrs attrs ctx)]
-          (p/append-raw w "<")
-          (p/append w tag)  ;; todo? [(:tag) {} ...]
-          (doseq [[attr value] attrs]
-            (p/append-raw w " ")
-            ;; todo: value = true
-            (p/append w attr)
-            (p/append-raw w "=\"")
-            (p/append w (str value))
-            (p/append-raw w "\""))
-          (p/append-raw w ">")
+         (let [attrs (merge-attrs literal-attrs attrs ctx)]
+           (p/append-raw w "<")
+           (p/append w tag)  ;; todo? [(:tag) {} ...]
+           (doseq [[attr value] attrs]
+             (p/append-raw w " ")
+             ;; todo: value = true
+             (p/append w attr)
+             (p/append-raw w "=\"")
+             (p/append w (str value))
+             (p/append-raw w "\""))
+           (p/append-raw w ">")
 
-          (doseq [item (interpose " " body)]
-            (p/render item w ctx))
+           (doseq [item (interpose " " body)]
+             (p/render item w ctx))
 
-          (p/append-raw w "</")
-          (p/append w tag)
-          (p/append-raw w ">"))))))
+           (p/append-raw w "</")
+           (p/append w tag)
+           (p/append-raw w ">")))))))
 
 (defn- list-element [node]
   (let [key            (nth node 0 nil)
@@ -82,9 +73,10 @@
         write          (case (count node)
                          1     p/write
                          (2 3) #(p/write %1 %2 %3 block inverted-block))]
-    (renderable [w ctx]
-      (let [value (get ctx key)]
-        (write value w ctx)))))
+    (reify p/Renderable
+      (render [this w ctx]
+        (let [value (get ctx key)]
+          (write value w ctx))))))
 
 (extend-protocol p/Element
   nil
