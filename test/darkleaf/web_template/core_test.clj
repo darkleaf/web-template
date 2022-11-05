@@ -2,7 +2,8 @@
   (:require
    [clojure.test :as t]
    [darkleaf.web-template.core :as wt]
-   [darkleaf.web-template.protocols :as wtp]))
+   [darkleaf.web-template.protocols :as wtp]
+   [darkleaf.web-template.protocols :as p]))
 
 (defmacro test-tmpl
   {:private      true
@@ -310,6 +311,26 @@
         tmpl    (layout body section)]
     (t/is (= "<layout><body>my body</body> <section>my section</section></layout>"
              (wt/render-to-string tmpl nil)))))
+
+(defmacro with-us-locale [& body]
+  `(let [previous# (java.util.Locale/getDefault)]
+     (try
+       (java.util.Locale/setDefault java.util.Locale/US)
+       ~@body
+       (finally
+         (java.util.Locale/setDefault previous#)))))
+
+(t/deftest helper-test
+  (let [format (fn [fmt]
+                 (reify wtp/Renderable
+                   (render [_ w {this 'this}]
+                     (p/append w (format fmt this)))))
+        tmpl   (wt/compile
+                [div (:price ~(format "%.2f"))])
+        data   {:price 0.12345}]
+    (with-us-locale
+      (t/is (= "<div>0.12</div>"
+               (wt/render-to-string tmpl data))))))
 
 (comment
  (defn- render [node data]
