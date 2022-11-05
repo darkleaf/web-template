@@ -10,7 +10,7 @@
   [& body]
   (when (seq body)
     `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string (wtp/compile (quote dsl#))
+                                  (wt/render-to-string (wt/compile dsl#)
                                                        data#))
        ~@body)))
 
@@ -297,6 +297,19 @@
 
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+(t/deftest partial-test
+  (let [layout  (fn [body section]
+                  (wt/compile
+                   [layout
+                    [body ~body]
+                    [section ~section]]))
+        body    (wt/compile
+                 "my body")
+        section (wt/compile
+                 "my section")
+        tmpl    (layout body section)]
+    (t/is (= "<layout><body>my body</body> <section>my section</section></layout>"
+             (wt/render-to-string tmpl nil)))))
 
 (comment
  (defn- render [node data]

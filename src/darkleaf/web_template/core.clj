@@ -1,16 +1,20 @@
 (ns darkleaf.web-template.core
-  #_(:refer-clojure :exclude [compile])
+  (:refer-clojure :exclude [compile])
   (:require
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.internal.attributes :refer [resolve-attrs merge-attrs]]
+   [darkleaf.web-template.internal.backtick :refer [template-fn]]
    [clojure.walk :as w]
    [clojure.test :as t])
   (:import
    (java.io StringWriter)))
 
 (set! *warn-on-reflection* true)
+
+(defmacro compile [form]
+  `(p/compile ~(template-fn form)))
 
 (defn render-to-string
   ([template data]
