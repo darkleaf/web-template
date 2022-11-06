@@ -5,9 +5,7 @@
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.internal.attributes :refer [resolve-attrs merge-attrs]]
-   [darkleaf.web-template.internal.backtick :refer [template-fn]]
-   [clojure.walk :as w]
-   [clojure.test :as t])
+   [darkleaf.web-template.internal.backtick :refer [template-fn]])
   (:import
    (java.io StringWriter)))
 
