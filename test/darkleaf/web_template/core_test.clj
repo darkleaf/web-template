@@ -2,8 +2,7 @@
   (:require
    [clojure.test :as t]
    [darkleaf.web-template.core :as wt]
-   [darkleaf.web-template.protocols :as wtp]
-   [darkleaf.web-template.protocols :as p]))
+   [darkleaf.web-template.protocols :as wtp]))
 
 (defmacro test-tmpl
   {:private      true
@@ -324,7 +323,7 @@
   (let [format (fn [fmt]
                  (reify wtp/Renderable
                    (render [_ w {this 'this}]
-                     (p/append w (format fmt this)))))
+                     (wtp/append w (format fmt this)))))
         tmpl   (wt/compile
                 [div (:price ~(format "%.2f"))])
         data   {:price 0.12345}]
