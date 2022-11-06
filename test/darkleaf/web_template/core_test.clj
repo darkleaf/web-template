@@ -332,6 +332,16 @@
       (t/is (= "<div>0.12</div>"
                (wt/render-to-string tmpl data))))))
 
+(def partial (wt/compile [inner "partial"]))
+
+(t/deftest var-as-partial-test
+  (let [tmpl (wt/compile [outer #'partial])]
+    (t/is (= "<outer><inner>partial</inner></outer>"
+             (wt/render-to-string tmpl nil)))
+    (with-redefs [partial (wt/compile [inner "redefined"])]
+      (t/is (= "<outer><inner>redefined</inner></outer>"
+             (wt/render-to-string tmpl nil))))))
+
 (comment
  (defn- render [node data]
    (let [tmpl (wt/compile* node)]

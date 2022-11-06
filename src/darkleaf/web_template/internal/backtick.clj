@@ -11,7 +11,8 @@
 ;; https://github.com/brandonbloom/backtick/blob/master/src/backtick.clj
 
 
-(ns darkleaf.web-template.internal.backtick)
+(ns darkleaf.web-template.internal.backtick
+  (:refer-clojure :exclude [var?]))
 
 (defn- unquote? [form]
   (and (seq? form) (= (first form) 'clojure.core/unquote)))
@@ -19,12 +20,16 @@
 (defn- unquote-splicing? [form]
   (and (seq? form) (= (first form) 'clojure.core/unquote-splicing)))
 
+(defn- var? [form]
+  (and (seq? form) (= (first form) 'var)))
+
 (defn template-fn [form]
   (cond
     (symbol? form) `'~form
     (unquote? form) (second form)
     (unquote-splicing? form) (throw (ex-info "Splice not in list" {:form form}))
     (record? form) `'~form
+    (var? form) form
     (coll? form)
     (let [xs (if (map? form) (apply concat form) form)
           parts (for [x xs]

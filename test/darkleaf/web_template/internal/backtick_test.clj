@@ -31,3 +31,10 @@
 (t/deftest record-test
   (t/testing "Record types are preserved"
     (t/is (= (R. 1) (template #darkleaf.web_template.internal.backtick_test.R{:x 1})))))
+
+(def x)
+
+(t/deftest var-test
+  (t/is (= [#'x]
+           (template [~#'x])
+           (template [#'x]))))

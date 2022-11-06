@@ -105,6 +105,10 @@
 
   ;; todo: literal string
 
+  clojure.lang.Var
+  (render [this w ctx]
+    (p/render @this w ctx))
+
   Object
   (render [this writer _]
     (p/append writer (str this))))
