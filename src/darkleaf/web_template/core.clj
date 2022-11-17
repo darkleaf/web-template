@@ -37,8 +37,15 @@
            (doseq [item (interpose " " body)]
              (p/render item w ctx)))))))
 
+(defn- normalize-tag [tag]
+  "Normalize `tag` into keyword or symbol."
+  (cond
+    (ident? tag)  tag
+    (string? tag) (keyword tag)
+    :else nil))
+
 (defn- vector-tag-element [[tag :as node]]
-  (when (ident? tag) ;; todo? string
+  (when-let [tag (normalize-tag tag)]
     (let [attrs?              (map? (nth node 1 nil))
           attrs               (if attrs? (nth node 1 nil))
           body                (nthnext node (if attrs? 2 1))

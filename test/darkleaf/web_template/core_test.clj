@@ -46,9 +46,37 @@
     nil
     "<div>1</div>"))
 
-;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(t/deftest str-tags-test
+  (test-tmpl
+    ["div" "my text"]
+    nil
+    "<div>my text</div>"
 
-;; todo: string tag
+    ["my:ns" "my text"]
+    nil
+    "<my:ns>my text</my:ns>"
+
+    ["a.my-class" "my text"]
+    nil
+    "<a class=\"my-class\">my text</a>"
+
+    [".my-class" "my text"]
+    nil
+    "<div class=\"my-class\">my text</div>"
+
+    ["#myId" "my text"]
+    nil
+    "<div id=\"myId\">my text</div>"
+
+    ["p.my-class#myId" "my text"]
+    nil
+    "<p id=\"myId\" class=\"my-class\">my text</p>"
+
+    ["div#hasNum.has-num" 1]
+    nil
+    "<div id=\"hasNum\" class=\"has-num\">1</div>"))
+
+;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 (t/deftest literal-attributes
    (test-tmpl
