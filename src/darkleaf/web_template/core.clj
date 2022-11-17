@@ -3,6 +3,7 @@
   (:require
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]
+   [darkleaf.web-template.internal.writer :as w]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.internal.attributes :refer [resolve-attrs merge-attrs]]
    [darkleaf.web-template.internal.backtick :refer [template-fn]])
@@ -50,23 +51,23 @@
         ;; todo: добавить случай для литеральных атрибутов,
         ;; чтобы не мержжить все это в рантайме
          (let [attrs (merge-attrs literal-attrs attrs ctx)]
-           (p/append-raw w "<")
-           (p/append w tag)  ;; todo? [(:tag) {} ...]
+           (w/append-raw w "<")
+           (w/append w tag)  ;; todo? [(:tag) {} ...]
            (doseq [[attr value] attrs]
-             (p/append-raw w " ")
+             (w/append-raw w " ")
              ;; todo: value = true
-             (p/append w attr)
-             (p/append-raw w "=\"")
-             (p/append w (str value))
-             (p/append-raw w "\""))
-           (p/append-raw w ">")
+             (w/append w attr)
+             (w/append-raw w "=\"")
+             (w/append w (str value))
+             (w/append-raw w "\""))
+           (w/append-raw w ">")
 
            (doseq [item (interpose " " body)]
              (p/render item w ctx))
 
-           (p/append-raw w "</")
-           (p/append w tag)
-           (p/append-raw w ">")))))))
+           (w/append-raw w "</")
+           (w/append w tag)
+           (w/append-raw w ">")))))))
 
 (defn- list-element [node]
   (let [key            (nth node 0 nil)
@@ -111,7 +112,7 @@
 
   Object
   (render [this writer _]
-    (p/append writer (str this))))
+    (w/append writer (str this))))
 
 (extend-protocol p/Value
   nil
@@ -123,14 +124,14 @@
   Object
   (write
     ([this w _]
-     (p/append w (str this)))
+     (w/append w (str this)))
     ([this w ctx block inverted-block]
      (p/render block w (p/ctx-push ctx this))))
 
   String
   (write
     ([this w ctx]
-     (p/append w this))
+     (w/append w this))
     ([this w ctx block inverted-block]
      (if-not (str/blank? this)
        (p/render block w (p/ctx-push ctx this))
@@ -139,7 +140,7 @@
   Boolean
   (write
     ([this w ctx]
-     (p/append w (str this)))
+     (w/append w (str this)))
     ([this w ctx block inverted-block]
      (if this
        (p/render block w (p/ctx-push ctx this))
@@ -148,19 +149,19 @@
   clojure.lang.Sequential
   (write
     ([this w ctx]
-     (p/append w (str this)))
+     (w/append w (str this)))
     ([this w ctx block inverted-block]
      (if (seq this)
        (doseq [item this]
          (p/render block w (p/ctx-push ctx item))
          ;; todo? space
-         (p/append-raw w " "))
+         (w/append-raw w " "))
        (p/render inverted-block w ctx))))
 
   clojure.lang.IPersistentMap
   (write
     ([this w ctx]
-     (p/append w (str this)))
+     (w/append w (str this)))
     ([this w ctx block inverted-block]
      (if (seq this)
        (p/render block w (p/ctx-push ctx this))
