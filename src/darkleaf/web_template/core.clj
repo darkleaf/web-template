@@ -3,7 +3,7 @@
   (:require
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]
-   [darkleaf.web-template.internal.tag :refer [parse-tag tag-namespace]]
+   [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.internal.attributes :refer [resolve-attrs merge-attrs]]
    [darkleaf.web-template.internal.backtick :refer [template-fn]])
   (:import
@@ -37,8 +37,11 @@
            (doseq [item (interpose " " body)]
              (p/render item w ctx)))))))
 
+(defn- tag? [tag]
+  (or (ident? tag) (string? tag)))
+
 (defn- vector-tag-element [[tag :as node]]
-  (when-let [tag (tag-namespace tag)]
+  (when (tag? tag)
     (let [attrs?              (map? (nth node 1 nil))
           attrs               (if attrs? (nth node 1 nil))
           body                (nthnext node (if attrs? 2 1))
