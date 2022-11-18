@@ -82,6 +82,15 @@
           (write value w ctx))))))
 
 (extend-protocol p/Element
+  ;; todo: literal string
+  #_#_
+  String
+  (compile [this]
+    (reify p/Renderable ...))
+  ;; Если делать через extend-protocol p/Renderable,
+  ;; то нет уверености в безопасности этой строки.
+  ;; Она может прилететь из хэлпера.
+
   nil
   (compile [this] this)
 
@@ -103,8 +112,6 @@
 (extend-protocol p/Renderable
   nil
   (render [_ _ _])
-
-  ;; todo: literal string
 
   clojure.lang.Var
   (render [this w ctx]
