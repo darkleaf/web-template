@@ -1,7 +1,5 @@
 (ns darkleaf.web-template.protocols
-  (:refer-clojure :exclude [compile])
-  (:import
-   (java.io Writer)))
+  (:refer-clojure :exclude [compile]))
 
 (set! *warn-on-reflection* true)
 
@@ -20,9 +18,3 @@
   (merge ctx
          (if (map? v) v)
          {'this v}))
-
-(defn append-raw [^Writer w ^String str]
-  (.append w str))
-
-(defn append [^Writer w ^String str]
-  (.append w str))
