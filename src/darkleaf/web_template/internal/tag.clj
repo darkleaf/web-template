@@ -14,6 +14,13 @@
     (str ns ":" s)
     s))
 
+(defn tag-namespace [tag]
+  "Normalize `tag` into keyword or symbol."
+  (cond
+    (ident? tag)  tag
+    (string? tag) (keyword tag)
+    :else nil))
+
 (defn parse-tag [s]
   (let [add-ns  (partial add-ns (namespace s))
         matches (re-seq #"[#.]?[^#.]+" (name s))
