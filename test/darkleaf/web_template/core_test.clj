@@ -342,6 +342,34 @@
       (t/is (= "<outer><inner>redefined</inner></outer>"
              (wt/render-to-string tmpl nil))))))
 
+(t/deftest fn-as-renderable-test
+  (let [admin   (wt/compile "admin")
+        user    (wt/compile "user")
+        default (wt/compile "undefined user type")
+        f       (fn [ctx]
+                  (case (-> ctx :user :type)
+                    :admin admin
+                    :user  user
+                    default))
+        tmpl    (wt/compile
+                 (:user ~f))
+        data    {:user {:type :admin}}]
+    (t/is (= "admin" (wt/render-to-string tmpl data)))))
+
+(t/deftest fn-as-attr-value-test
+  (let [classes (fn [ctx]
+                  (case (-> ctx :user :type)
+                    :admin [:base :admin]
+                    :user  [:base :user]))
+        tmpl    (wt/compile
+                 (:user
+                  [div {class ~classes}
+                   (:name)]))
+        data    {:user {:type :admin
+                        :name "John"}}]
+    (t/is (= "<div class=\"base admin\">John</div>"
+             (wt/render-to-string tmpl data)))))
+
 (comment
  (defn- render [node data]
    (let [tmpl (wt/compile* node)]

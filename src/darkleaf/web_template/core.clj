@@ -117,6 +117,10 @@
   (render [this w ctx]
     (p/render @this w ctx))
 
+  clojure.lang.Fn
+  (render [this w ctx]
+    (p/render (this ctx) w ctx))
+
   Object
   (render [this writer _]
     (w/append writer (str this))))

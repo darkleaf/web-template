@@ -34,6 +34,7 @@
                                        (map name)
                                        (cons-some %)
                                        (str/join " ")))
+      (fn? v)      (recur ctx acc k (v ctx))
       :else        (assoc acc k (str v)))))
 
 (defn- ctx-resolve [ctx node]
