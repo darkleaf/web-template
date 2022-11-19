@@ -1,7 +1,10 @@
 (ns darkleaf.web-template.internal.attributes
   (:require
    [clojure.string :as str]
-   [clojure.walk :as w]))
+   [clojure.walk :as w]
+   [darkleaf.web-template.protocols :as wtp])
+  (:import
+   (java.io StringWriter)))
 
 (defn- attr-name [k]
   (let [attr-ns   (if (ident? k) (namespace k))
@@ -14,6 +17,11 @@
   (if (some? x)
     (cons x seq)
     seq))
+
+(defn- render-to-string [template ctx]
+  (let [sw (StringWriter.)]
+    (wtp/render template sw ctx)
+    (.toString sw)))
 
 (defn- add-value [ctx acc k v]
   (let [k (attr-name k)]
@@ -34,7 +42,7 @@
                                        (map name)
                                        (cons-some %)
                                        (str/join " ")))
-      :else        (assoc acc k (str v)))))
+      :else        (assoc acc k (render-to-string v ctx)))))
 
 (defn- ctx-resolve [ctx node]
   (if (list? node)
