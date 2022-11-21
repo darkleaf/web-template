@@ -44,10 +44,11 @@
 
 
     {"class" "a"} {class nil} nil
-    {"class" "a"}
+    {}
+
 
     {"class" "a"} {class #{b} ... (:attrs)} {:attrs {:class nil}}
-    {"class" "a b"}
+    {}
 
 
     {"class" "a"} {class false} nil

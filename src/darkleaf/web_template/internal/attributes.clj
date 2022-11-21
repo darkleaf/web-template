@@ -15,7 +15,7 @@
 (defn- add-value [ctx acc k v]
   (let [k (attr-name k)]
     (cond
-      (nil? v)     acc
+      (nil? v)     (dissoc acc k)
       (false? v)   (dissoc acc k)
       (true? v)    (assoc acc k true)
       (string? v)  (assoc acc k v)
