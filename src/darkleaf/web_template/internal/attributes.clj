@@ -40,7 +40,7 @@
         v           (w/prewalk ctx-resolve v)]
     (assoc acc k v)))
 
-(defn resolve-attrs [ctx attrs]
+(defn- resolve-attrs [ctx attrs]
   (reduce-kv (partial resolve-attr ctx)
              {} attrs))
 
