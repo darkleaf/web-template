@@ -1,14 +1,11 @@
 (ns darkleaf.web-template.internal.attributes
   (:require
    [clojure.string :as str]
-   [clojure.walk :as w]))
+   [clojure.walk :as w]
+   [darkleaf.web-template.internal.utils :as u]))
 
 (defn- attr-name [k]
-  (let [attr-ns   (if (ident? k) (namespace k))
-        attr-name (name k)]
-    (if attr-ns
-      (str attr-ns ":" attr-name)
-      attr-name)))
+  (u/join-some ":" [(u/namespace k) (name k)]))
 
 (defn- cons-some [x seq]
   (if (some? x)
