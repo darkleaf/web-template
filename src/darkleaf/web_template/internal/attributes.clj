@@ -39,8 +39,6 @@
     (get ctx (first node))
     node))
 
-;; todo? default
-;; [div {class (:class default-a default-b ...)} ...]
 (defn- resolve-attr [ctx acc k v]
   (let [ctx-resolve (partial ctx-resolve ctx)
         k           (w/prewalk ctx-resolve k)
