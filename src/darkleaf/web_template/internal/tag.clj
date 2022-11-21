@@ -14,12 +14,12 @@
     (str ns ":" s)
     s))
 
-(defn parse-tag [s]
-  (let [add-ns  (partial add-ns (namespace s))
-        matches (re-seq #"[#.]?[^#.]+" (name s))
+(defn- parse-ident-tag [tag]
+  (let [add-ns  (partial add-ns (namespace tag))
+        matches (re-seq #"[#.]?[^#.]+" (name tag))
         [tag-name names]
         (cond (empty? matches)
-              (throw (ex-info (str "Can't match CSS tag: " s) {:tag s}))
+              (throw (ex-info (str "Can't match CSS tag: " tag) {:tag tag}))
 
               (#{\# \.} (ffirst matches)) ;; shorthand for div
               ["div" matches]
@@ -34,3 +34,8 @@
                            id    (assoc (add-ns "id") id)
                            class (assoc (add-ns "class") class))]
     [tag-name attrs]))
+
+(defn parse-tag [tag]
+  (if (string? tag)
+    [tag {}]
+    (parse-ident-tag tag)))

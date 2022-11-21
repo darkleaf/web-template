@@ -38,8 +38,12 @@
            (doseq [item (interpose " " body)]
              (p/render item w ctx)))))))
 
+(defn- tag? [tag]
+  (or (ident? tag)
+      (string? tag)))
+
 (defn- vector-tag-element [[tag :as node]]
-  (when (ident? tag) ;; todo? string
+  (when (tag? tag)
     (let [attrs?              (map? (nth node 1 nil))
           attrs               (if attrs? (nth node 1 nil))
           body                (nthnext node (if attrs? 2 1))

@@ -35,7 +35,16 @@
 
     [div [div]]
     nil
-    "<div><div></div></div>"))
+    "<div><div></div></div>"
+
+    [:div]
+    nil
+    "<div></div>"
+
+    ["div"]
+    nil
+    "<div></div>"))
+
 
 (t/deftest body-test
   (test-tmpl
@@ -48,8 +57,6 @@
     "<div>1</div>"))
 
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-;; todo: string tag
 
 (t/deftest literal-attributes
    (test-tmpl
@@ -68,6 +75,20 @@
      [.a#b]
      nil
      "<div id=\"b\" class=\"a\"></div>"))
+
+(t/deftest string-tag
+  (test-tmpl
+    ["ns:tag"]
+    nil
+    "<ns:tag></ns:tag>"
+
+    ["x.y.z"]
+    nil
+    "<x.y.z></x.y.z>"
+
+    ["$tag$"]
+    nil
+    "<$tag$></$tag$>"))
 
 (t/deftest static-attrs
   (test-tmpl
