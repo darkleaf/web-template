@@ -7,11 +7,6 @@
 (defn- attr-name [k]
   (u/join-some ":" [(u/namespace k) (name k)]))
 
-(defn- cons-some [x seq]
-  (if (some? x)
-    (cons x seq)
-    seq))
-
 (defn- add-value [ctx acc k v]
   (let [k (attr-name k)]
     (cond
@@ -24,12 +19,12 @@
                                        (filter val)
                                        (map key)
                                        (map name)
-                                       (cons-some %)
+                                       (u/cons-some %)
                                        (str/join " ")))
       (seqable? v) (update acc k #(->> v
                                        (filter some?)
                                        (map name)
-                                       (cons-some %)
+                                       (u/cons-some %)
                                        (str/join " ")))
       (fn? v)      (recur ctx acc k (v ctx))
       :else        (assoc acc k (str v)))))

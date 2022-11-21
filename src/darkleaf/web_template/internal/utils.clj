@@ -12,3 +12,8 @@
 (defn namespace [x]
   (if (ident? x)
     (c/namespace x)))
+
+(defn cons-some [x seq]
+  (if (some? x)
+    (cons x seq)
+    seq))
