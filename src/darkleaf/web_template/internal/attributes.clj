@@ -5,29 +5,36 @@
    [darkleaf.web-template.internal.utils :as u]))
 
 (defn- attr-name [k]
-  (u/join-some ":" [(u/namespace k) (name k)]))
+  (->> [(u/namespace k) (name k)]
+       (u/join-some ":")))
 
-(defn- add-value [ctx acc k v]
-  (let [k (attr-name k)]
-    (cond
-      (nil? v)     (dissoc acc k)
-      (false? v)   (dissoc acc k)
-      (true? v)    (assoc acc k true)
-      (string? v)  (assoc acc k v)
-      (ident? v)   (assoc acc k (name v))
-      (map? v)     (update acc k #(->> v
-                                       (filter val)
-                                       (map key)
-                                       (map name)
-                                       (u/cons-some %)
-                                       (str/join " ")))
-      (seqable? v) (update acc k #(->> v
-                                       (filter some?)
-                                       (map name)
-                                       (u/cons-some %)
-                                       (str/join " ")))
-      (fn? v)      (recur ctx acc k (v ctx))
-      :else        (assoc acc k (str v)))))
+(defn- update-value [ctx value patch]
+  (cond
+    (nil? patch)     nil
+    (false? patch)   nil
+    (true? patch)    true
+    (string? patch)  patch
+    (ident? patch)   (name patch)
+    (map? patch)     (->> patch
+                          (filter val)
+                          (map key)
+                          (map name)
+                          (u/cons-some value)
+                          (str/join " "))
+    (seqable? patch) (->> patch
+                          (filter some?)
+                          (map name)
+                          (u/cons-some value)
+                          (str/join " "))
+    (fn? patch)      (recur ctx value (patch ctx))
+    :else            (str patch)))
+
+(defn- update-value-r [ctx acc proto-k patch]
+  (let [k (attr-name proto-k)
+        v (get acc k)]
+    (if-some [v (update-value ctx v patch)]
+      (assoc acc k v)
+      (dissoc acc k))))
 
 (defn- ctx-resolve [ctx node]
   (if (list? node)
@@ -45,10 +52,10 @@
              {} attrs))
 
 (defn merge-attrs [literal attrs ctx]
-  (let [attrs     (resolve-attrs ctx attrs)
-        dynamic   (get attrs '...)
-        attrs     (dissoc attrs '...)
-        add-value (partial add-value ctx)
-        res       (reduce-kv add-value literal attrs)
-        res       (reduce-kv add-value res dynamic)]
+  (let [attrs          (resolve-attrs ctx attrs)
+        dynamic        (get attrs '...)
+        attrs          (dissoc attrs '...)
+        update-value-r (partial update-value-r ctx)
+        res            (reduce-kv update-value-r literal attrs)
+        res            (reduce-kv update-value-r res dynamic)]
     res))
