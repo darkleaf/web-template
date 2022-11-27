@@ -14,7 +14,7 @@
 
   Boolean
   (update-attribute-value [patch _ _]
-    (if (true? patch)
+    (if patch
       true
       nil))
 
