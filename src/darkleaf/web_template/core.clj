@@ -11,7 +11,7 @@
 (set! *warn-on-reflection* true)
 
 (defmacro compile [form]
-  `(p/compile ~(template-fn form)))
+  `(p/compile-element ~(template-fn form)))
 
 (defn render-to-string
   ([template data]
@@ -29,7 +29,7 @@
 
 (defn- vector-<>-element [[tag & body :as node]]
    (when (= '<> tag)
-     (let [body (map p/compile body)]
+     (let [body (map p/compile-element body)]
        (reify p/Renderable
          (render [_ w ctx]
            (doseq [item (interpose " " body)]
@@ -46,7 +46,7 @@
           body                (nthnext node (if attrs? 2 1))
           [tag literal-attrs] (parse-tag tag)
           tag                 ^String tag
-          body                (mapv p/compile body)]
+          body                (mapv p/compile-element body)]
       (reify p/Renderable
         (render [_ w ctx]
         ;; todo: добавить случай для литеральных атрибутов,
@@ -72,8 +72,8 @@
 
 (defn- list-element [node]
   (let [key            (nth node 0 nil)
-        block          (-> node (nth 1 nil) p/compile)
-        inverted-block (-> node (nth 2 nil) p/compile)
+        block          (-> node (nth 1 nil) p/compile-element)
+        inverted-block (-> node (nth 2 nil) p/compile-element)
         write          (case (count node)
                          1     p/write
                          (2 3) #(p/write %1 %2 %3 block inverted-block))]
@@ -93,20 +93,20 @@
   ;; Она может прилететь из хэлпера.
 
   nil
-  (compile [this] this)
+  (compile-element [this] this)
 
   Object
-  (compile [this] this)
+  (compile-element [this] this)
 
   clojure.lang.PersistentVector
-  (compile [this]
+  (compile-element [this]
     (chain-handlers this
       vector-<>-element
       vector-tag-element
       #_todo-else))
 
   clojure.lang.PersistentList
-  (compile [this]
+  (compile-element [this]
     (chain-handlers this
       list-element)))
 

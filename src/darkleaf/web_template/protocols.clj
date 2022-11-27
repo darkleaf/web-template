@@ -1,10 +1,7 @@
-(ns darkleaf.web-template.protocols
-  (:refer-clojure :exclude [compile]))
-
-(set! *warn-on-reflection* true)
+(ns darkleaf.web-template.protocols)
 
 (defprotocol Element
-  (compile [this]))
+  (compile-element [this]))
 
 (defprotocol Renderable
   (render [this writer ctx]))
