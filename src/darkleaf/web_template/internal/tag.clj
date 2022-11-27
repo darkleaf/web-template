@@ -1,8 +1,18 @@
+;; *********************************************************************
+;; * Copyright (c) 2013-2020 r0man
+;; *
+;; * This program and the accompanying materials are made
+;; * available under the terms of the Eclipse Public License 2.0
+;; * which is available at https://www.eclipse.org/legal/epl-2.0/
+;; *
+;; * SPDX-License-Identifier: EPL-2.0
+;; **********************************************************************/
+
+;; https://github.com/r0man/sablono/blob/master/src/sablono/normalize.cljc
+
 (ns darkleaf.web-template.internal.tag
   (:require
    [clojure.string :as str]))
-
-;; based on https://github.com/r0man/sablono/blob/master/src/sablono/normalize.cljc
 
 (defn- strip-css
   "Strip the # and . characters from the beginning of `s`."
