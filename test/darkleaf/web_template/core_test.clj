@@ -14,35 +14,7 @@
                                                        data#))
        ~@body)))
 
-(t/deftest static-test
-  (test-tmpl
-    "a"
-    nil
-    "a"
 
-    [div]
-    nil
-    "<div></div>"
-
-    [div "a"]
-    nil
-    "<div>a</div>"
-
-    [div "a" "b"]
-    nil
-    "<div>a b</div>"
-
-    [div [div]]
-    nil
-    "<div><div></div></div>"
-
-    [:div]
-    nil
-    "<div></div>"
-
-    ["div"]
-    nil
-    "<div></div>"))
 
 
 (t/deftest body-test
@@ -134,16 +106,6 @@
     {:class "b"
      :attrs {"class" "c"}}
     "<div class=\"c\"></div>"))
-
-;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-(t/deftest <>-test
-  (test-tmpl
-    [<>
-     [div "a"]
-     [div "b"]]
-    nil
-    "<div>a</div> <div>b</div>"))
 
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

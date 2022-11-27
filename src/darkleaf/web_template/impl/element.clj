@@ -17,6 +17,8 @@
      (let [body (map p/compile-element body)]
        (reify p/Renderable
          (render [_ w ctx]
+           ;; todo: может быть тут не нужен пробел?
+           #_[<> "foo" " " "bar"]
            (doseq [item (interpose " " body)]
              (p/render item w ctx)))))))
 
