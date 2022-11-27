@@ -47,5 +47,5 @@
 
 (defn parse-tag [tag]
   (if (string? tag)
-    [tag {}]
+    [tag nil]
     (parse-ident-tag tag)))

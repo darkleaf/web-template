@@ -5,6 +5,15 @@
 
 (t/deftest parse-tag-test
   (t/are [literal tag attrs] (t/is (= [tag attrs] (parse-tag (quote literal))))
+    "foo"
+    "foo" nil
+
+    "foo:bar"
+    "foo:bar" nil
+
+    "foo#bar"
+    "foo#bar" nil
+
     div
     "div" nil
 
