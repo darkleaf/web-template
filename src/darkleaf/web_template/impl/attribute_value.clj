@@ -3,14 +3,41 @@
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]))
 
+(defn update-attribute-value-seqable [patch _ value]
+  (->> patch
+       (cons value)
+       (filter some?)
+       (map name)
+       (str/join " ")))
+
+(defn update-attribute-value-map [patch ctx value]
+  (let [patch (->> patch
+                   (filter val)
+                   (map key))]
+    (update-attribute-value-seqable patch ctx value)))
+
+(defn update-attribute-value-ident [patch _ _]
+  (name patch))
+
+(defn update-attribute-value-fn [patch ctx value]
+  (p/update-attribute-value (patch ctx) ctx value))
+
+(defn update-attribute-value-default [patch _ _]
+  (str patch))
+
 (extend-protocol p/AttributeValue
   nil
   (update-attribute-value [_ _ _]
     nil)
 
   Object
-  (update-attribute-value [patch _ _]
-    (str patch))
+  (update-attribute-value [patch ctx value]
+    (cond
+      (ident? patch)   (update-attribute-value-ident   patch ctx value)
+      (map? patch)     (update-attribute-value-map     patch ctx value)
+      (seqable? patch) (update-attribute-value-seqable patch ctx value)
+      (fn? patch)      (update-attribute-value-fn      patch ctx value)
+      :default         (update-attribute-value-default patch ctx value)))
 
   Boolean
   (update-attribute-value [patch _ _]
@@ -20,27 +47,4 @@
 
   String
   (update-attribute-value [patch _ _]
-    patch)
-
-  clojure.lang.Named
-  (update-attribute-value [patch _ _]
-    (name patch))
-
-  clojure.lang.IPersistentMap
-  (update-attribute-value [patch ctx value]
-    (let [patch (->> patch
-                     (filter val)
-                     (map key))]
-      (p/update-attribute-value patch ctx value)))
-
-  java.util.Collection
-  (update-attribute-value [patch _ value]
-    (->> patch
-         (cons value)
-         (filter some?)
-         (map name)
-         (str/join " ")))
-
-  clojure.lang.Fn
-  (update-attribute-value [patch ctx value]
-    (p/update-attribute-value (patch ctx) ctx value)))
+    patch))

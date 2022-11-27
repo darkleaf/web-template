@@ -3,6 +3,12 @@
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.writer :as w]))
 
+(defn render-fn [this w ctx]
+  (p/render (this ctx) w ctx))
+
+(defn render-default [this w ctx]
+  (w/append w (str this)))
+
 (extend-protocol p/Renderable
   nil
   (render [_ _ _])
@@ -11,10 +17,8 @@
   (render [this w ctx]
     (p/render @this w ctx))
 
-  clojure.lang.Fn
-  (render [this w ctx]
-    (p/render (this ctx) w ctx))
-
   Object
-  (render [this writer _]
-    (w/append writer (str this))))
+  (render [this w ctx]
+    (cond
+      (fn? this) (render-fn this w ctx)
+      :default   (render-default this w ctx))))
