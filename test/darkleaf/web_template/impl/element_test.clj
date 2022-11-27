@@ -74,10 +74,10 @@
 (t/deftest list-test
   (let [value (reify wtp/Value
                 (write-value [this w ctx]
-                  (t/is (= {'this this} ctx))
+                  (t/is (= this ctx))
                   (w/append-raw w "stub/3"))
                 (write-value [this w ctx block inverted-block]
-                  (t/is (= {'this this} ctx))
+                  (t/is (= this ctx))
                   (w/append-raw w "stub/5")
                   (w/append-raw w " ") (wtp/render block w ctx)
                   (w/append-raw w " ") (wtp/render inverted-block w ctx)))]
@@ -97,7 +97,7 @@
 (t/deftest renderable-test
   (let [renderable (reify wtp/Renderable
                      (render [this w ctx]
-                       (t/is (= {'this ::data} ctx))
+                       (t/is (= ::data ctx))
                        (w/append-raw w "stub")))]
     (test-tmpl
       ~renderable

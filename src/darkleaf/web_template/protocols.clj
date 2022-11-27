@@ -13,8 +13,3 @@
 
 (defprotocol AttributeValue
   (update-attribute-value [patch ctx value]))
-
-(defn ctx-push [ctx v]
-  (merge ctx
-         (if (map? v) v)
-         {'this v}))

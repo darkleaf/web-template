@@ -17,7 +17,7 @@
 
 (t/deftest fn-test
   (let [value (fn [ctx]
-                (t/is (= {'this ::data} ctx))
+                (t/is (= ::data ctx))
                 "stub")
         tmpl  (wt/compile ~value)
         data  ::data]

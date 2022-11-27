@@ -2,6 +2,8 @@
   (:import
     (java.io Writer StringWriter)))
 
+(set! *warn-on-reflection* true)
+
 ;; TODO: for cljs use https://google.github.io/closure-library/api/goog.string.StringBuffer.html
 
 (defn append-raw [^Writer w ^String str]
