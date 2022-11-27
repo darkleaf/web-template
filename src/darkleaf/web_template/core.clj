@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [compile])
   (:require
    darkleaf.web-template.impl.element
+   darkleaf.web-template.impl.renderable
 
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]
@@ -20,22 +21,6 @@
   ([template ctx data]
    (w/write-to-string
     #(p/render template % (p/ctx-push ctx data)))))
-
-(extend-protocol p/Renderable
-  nil
-  (render [_ _ _])
-
-  clojure.lang.Var
-  (render [this w ctx]
-    (p/render @this w ctx))
-
-  clojure.lang.Fn
-  (render [this w ctx]
-    (p/render (this ctx) w ctx))
-
-  Object
-  (render [this writer _]
-    (w/append writer (str this))))
 
 (extend-protocol p/Value
   nil
