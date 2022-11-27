@@ -18,9 +18,7 @@
   ([this w ctx block inverted-block]
    (if (seq this)
      (doseq [item this]
-       (p/render block w (p/ctx-push ctx item))
-       ;; todo? space
-       (w/append-raw w " "))
+       (p/render block w (p/ctx-push ctx item)))
      (p/render inverted-block w ctx))))
 
 (defn write-value-default

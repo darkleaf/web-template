@@ -41,7 +41,7 @@
     nil
     "<div>a</div>"
 
-    [div "a" "b"]
+    [div "a" " " "b"]
     nil
     "<div>a b</div>"
 
@@ -67,9 +67,7 @@
 
 (t/deftest <>-test
   (test-tmpl
-    [<>
-     "foo"
-     "bar"]
+    [<> "foo" " " "bar"]
     nil
     "foo bar"))
 

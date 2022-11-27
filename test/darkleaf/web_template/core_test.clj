@@ -120,7 +120,7 @@
         section (wt/compile
                  "my section")
         tmpl    (layout body section)]
-    (t/is (= "<layout><body>my body</body> <section>my section</section></layout>"
+    (t/is (= "<layout><body>my body</body><section>my section</section></layout>"
              (wt/render-to-string tmpl nil)))))
 
 (defmacro with-us-locale [& body]

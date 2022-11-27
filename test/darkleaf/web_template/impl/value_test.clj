@@ -94,23 +94,23 @@
     [true false]
     "[true false]"
 
-    (this (this))
+    (this [<> (this) " "])
     ["a" "b"]
     "a b "
 
-    (this "present")
+    (this "present ")
     [true false]
     "present present "
 
-    (this "present")
+    (this "present ")
     []
     ""
 
-    (this "present" "blank")
+    (this "present " "blank")
     [true false]
     "present present "
 
-    (this "present" "blank")
+    (this "present " "blank")
     []
     "blank"))
 
@@ -124,23 +124,23 @@
     #{true false}
     "#{true false}"
 
-    (this (this))
+    (this [<> (this) " "])
     #{"a" "b"}
     "a b "
 
-    (this "present")
+    (this "present ")
     #{true false}
     "present present "
 
-    (this "present")
+    (this "present ")
     #{}
     ""
 
-    (this "present" "blank")
+    (this "present " "blank")
     #{true false}
     "present present "
 
-    (this "present" "blank")
+    (this "present " "blank")
     #{}
     "blank"))
 

@@ -17,9 +17,7 @@
      (let [body (map p/compile-element body)]
        (reify p/Renderable
          (render [_ w ctx]
-           ;; todo: может быть тут не нужен пробел?
-           #_[<> "foo" " " "bar"]
-           (doseq [item (interpose " " body)]
+           (doseq [item body]
              (p/render item w ctx)))))))
 
 (defn- tag? [tag]
@@ -50,7 +48,7 @@
              (w/append-raw w "\""))
            (w/append-raw w ">")
 
-           (doseq [item (interpose " " body)]
+           (doseq [item body]
              (p/render item w ctx))
 
            (w/append-raw w "</")
