@@ -1,4 +1,4 @@
-(ns darkleaf.web-template.internal.writer
+(ns darkleaf.web-template.writer
   (:import
     (java.io Writer)))
 

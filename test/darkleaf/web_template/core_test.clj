@@ -3,7 +3,7 @@
    [clojure.test :as t]
    [darkleaf.web-template.core :as wt]
    [darkleaf.web-template.protocols :as wtp]
-   [darkleaf.web-template.internal.writer :as w]))
+   [darkleaf.web-template.writer :as w]))
 
 (defmacro test-tmpl
   {:private      true

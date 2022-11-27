@@ -3,7 +3,7 @@
   (:require
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]
-   [darkleaf.web-template.internal.writer :as w]
+   [darkleaf.web-template.writer :as w]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.internal.attributes :refer [merge-attrs]]
    [darkleaf.web-template.internal.backtick :refer [template-fn]])
