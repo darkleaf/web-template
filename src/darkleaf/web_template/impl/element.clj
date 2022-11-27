@@ -55,10 +55,9 @@
            (w/append w tag)
            (w/append-raw w ">")))))))
 
-(defn- list-element [node]
-  (let [key            (nth node 0 nil)
-        block          (-> node (nth 1 nil) p/compile-element)
-        inverted-block (-> node (nth 2 nil) p/compile-element)
+(defn- list-element [[key block inverted-block :as node]]
+  (let [block          (-> block          p/compile-element)
+        inverted-block (-> inverted-block p/compile-element)
         write-value    (case (count node)
                          1     p/write-value
                          (2 3) #(p/write-value %1 %2 %3 block inverted-block))]
