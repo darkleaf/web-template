@@ -6,20 +6,20 @@
 
 (extend-protocol p/Value
   nil
-  (write
+  (write-value
     ([this _ _])
     ([this w ctx block inverted-block]
      (p/render inverted-block w ctx)))
 
   Object
-  (write
+  (write-value
     ([this w _]
      (w/append w (str this)))
     ([this w ctx block inverted-block]
      (p/render block w (p/ctx-push ctx this))))
 
   String
-  (write
+  (write-value
     ([this w ctx]
      (w/append w this))
     ([this w ctx block inverted-block]
@@ -28,7 +28,7 @@
        (p/render inverted-block w ctx))))
 
   Boolean
-  (write
+  (write-value
     ([this w ctx]
      (w/append w (str this)))
     ([this w ctx block inverted-block]
@@ -37,7 +37,7 @@
        (p/render inverted-block w ctx))))
 
   clojure.lang.Sequential
-  (write
+  (write-value
     ([this w ctx]
      (w/append w (str this)))
     ([this w ctx block inverted-block]
@@ -49,7 +49,7 @@
        (p/render inverted-block w ctx))))
 
   clojure.lang.IPersistentMap
-  (write
+  (write-value
     ([this w ctx]
      (w/append w (str this)))
     ([this w ctx block inverted-block]

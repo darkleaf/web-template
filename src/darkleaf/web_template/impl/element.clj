@@ -59,13 +59,13 @@
   (let [key            (nth node 0 nil)
         block          (-> node (nth 1 nil) p/compile-element)
         inverted-block (-> node (nth 2 nil) p/compile-element)
-        write          (case (count node)
-                         1     p/write
-                         (2 3) #(p/write %1 %2 %3 block inverted-block))]
+        write-value    (case (count node)
+                         1     p/write-value
+                         (2 3) #(p/write-value %1 %2 %3 block inverted-block))]
     (reify p/Renderable
       (render [this w ctx]
         (let [value (get ctx key)]
-          (write value w ctx))))))
+          (write-value value w ctx))))))
 
 (extend-protocol p/Element
   ;; todo: literal string
