@@ -36,7 +36,7 @@
        (p/render block w (p/ctx-push ctx this))
        (p/render inverted-block w ctx))))
 
-  clojure.lang.Sequential
+  java.util.Collection
   (write-value
     ([this w ctx]
      (w/append w (str this)))
