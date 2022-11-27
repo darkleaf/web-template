@@ -6,9 +6,7 @@
    [darkleaf.web-template.writer :as w]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.internal.attributes :refer [merge-attrs]]
-   [darkleaf.web-template.internal.backtick :refer [template-fn]])
-  (:import
-   (java.io StringWriter)))
+   [darkleaf.web-template.internal.backtick :refer [template-fn]]))
 
 (set! *warn-on-reflection* true)
 
@@ -19,9 +17,8 @@
   ([template data]
    (render-to-string template nil data))
   ([template ctx data]
-   (let [sw (StringWriter.)]
-     (p/render template sw (p/ctx-push ctx data))
-     (.toString sw))))
+   (w/write-to-string
+    #(p/render template % (p/ctx-push ctx data)))))
 
 (defmacro chain-handlers
   {:private      true
