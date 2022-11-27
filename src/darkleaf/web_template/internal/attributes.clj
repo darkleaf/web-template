@@ -2,12 +2,12 @@
   (:require
    [clojure.string :as str]
    [clojure.walk :as w]
-   [darkleaf.web-template.protocols :as p]
-   [darkleaf.web-template.internal.utils :as u]))
+   [darkleaf.web-template.protocols :as p]))
 
 (defn- attr-name [k]
-  (->> [(u/namespace k) (name k)]
-       (u/join-some ":")))
+  (if (qualified-ident? k)
+    (str (namespace k) ":" (name k))
+    (name k)))
 
 (defn- update-value-r [ctx acc proto-k patch]
   (let [k (attr-name proto-k)

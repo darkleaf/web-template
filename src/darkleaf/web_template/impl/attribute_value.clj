@@ -1,7 +1,6 @@
 (ns darkleaf.web-template.impl.attribute-value
   (:require
    [clojure.string :as str]
-   [darkleaf.web-template.internal.utils :as u]
    [darkleaf.web-template.protocols :as p]))
 
 (extend-protocol p/AttributeValue
@@ -28,20 +27,18 @@
     (name patch))
 
   clojure.lang.IPersistentMap
-  (update-attribute-value [patch _ value]
-    (->> patch
-         (filter val)
-         (map key)
-         (map name)
-         (u/cons-some value)
-         (str/join " ")))
+  (update-attribute-value [patch ctx value]
+    (let [patch (->> patch
+                     (filter val)
+                     (map key))]
+      (p/update-attribute-value patch ctx value)))
 
   java.util.Collection
   (update-attribute-value [patch _ value]
     (->> patch
+         (cons value)
          (filter some?)
          (map name)
-         (u/cons-some value)
          (str/join " ")))
 
   clojure.lang.Fn
