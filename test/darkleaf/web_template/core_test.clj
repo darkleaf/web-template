@@ -143,30 +143,6 @@
       (t/is (= "<div>0.12</div>"
                (wt/render-to-string tmpl data))))))
 
-(def compiled-part (wt/compile [inner "partial"]))
-
-(t/deftest var-as-partial-test
-  (let [tmpl (wt/compile [outer #'compiled-part])]
-    (t/is (= "<outer><inner>partial</inner></outer>"
-             (wt/render-to-string tmpl nil)))
-    (with-redefs [compiled-part (wt/compile [inner "redefined"])]
-      (t/is (= "<outer><inner>redefined</inner></outer>"
-             (wt/render-to-string tmpl nil))))))
-
-(t/deftest fn-as-renderable-test
-  (let [admin   (wt/compile "admin")
-        user    (wt/compile "user")
-        default (wt/compile "undefined user type")
-        f       (fn [ctx]
-                  (case (-> ctx :user :type)
-                    :admin admin
-                    :user  user
-                    default))
-        tmpl    (wt/compile
-                 (:user ~f))
-        data    {:user {:type :admin}}]
-    (t/is (= "admin" (wt/render-to-string tmpl data)))))
-
 (t/deftest fn-as-attr-value-test
   (let [classes (fn [ctx]
                   (case (-> ctx :user :type)
