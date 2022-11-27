@@ -11,6 +11,9 @@
     [this writer ctx]
     [this writer ctx block inverted-block]))
 
+(defprotocol AttributeValue
+  (update-attribute-value [patch ctx value]))
+
 (defn ctx-push [ctx v]
   (merge ctx
          (if (map? v) v)

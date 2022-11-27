@@ -2,37 +2,17 @@
   (:require
    [clojure.string :as str]
    [clojure.walk :as w]
+   [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.internal.utils :as u]))
 
 (defn- attr-name [k]
   (->> [(u/namespace k) (name k)]
        (u/join-some ":")))
 
-(defn- update-value [ctx value patch]
-  (cond
-    (nil? patch)     nil
-    (false? patch)   nil
-    (true? patch)    true
-    (string? patch)  patch
-    (ident? patch)   (name patch)
-    (map? patch)     (->> patch
-                          (filter val)
-                          (map key)
-                          (map name)
-                          (u/cons-some value)
-                          (str/join " "))
-    (seqable? patch) (->> patch
-                          (filter some?)
-                          (map name)
-                          (u/cons-some value)
-                          (str/join " "))
-    (fn? patch)      (recur ctx value (patch ctx))
-    :else            (str patch)))
-
 (defn- update-value-r [ctx acc proto-k patch]
   (let [k (attr-name proto-k)
         v (get acc k)]
-    (if-some [v (update-value ctx v patch)]
+    (if-some [v (p/update-attribute-value patch ctx v)]
       (assoc acc k v)
       (dissoc acc k))))
 
