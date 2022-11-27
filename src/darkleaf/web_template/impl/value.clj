@@ -1,8 +1,8 @@
 (ns darkleaf.web-template.impl.value
   (:require
+   [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]
-   [darkleaf.web-template.writer :as w]
-   [clojure.string :as str]))
+   [darkleaf.web-template.writer :as w]))
 
 (extend-protocol p/Value
   nil

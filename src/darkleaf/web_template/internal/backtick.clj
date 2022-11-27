@@ -10,7 +10,6 @@
 
 ;; https://github.com/brandonbloom/backtick/blob/master/src/backtick.clj
 
-
 (ns darkleaf.web-template.internal.backtick
   (:refer-clojure :exclude [var?]))
 
