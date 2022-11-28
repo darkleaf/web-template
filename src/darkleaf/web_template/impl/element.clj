@@ -71,20 +71,18 @@
           (write-value value w ctx))))))
 
 (extend-protocol p/Element
-  ;; todo: literal string
-  #_#_
-  String
-  (compile [this]
-    (reify p/Renderable ...))
-  ;; Если делать через extend-protocol p/Renderable,
-  ;; то нет уверености в безопасности этой строки.
-  ;; Она может прилететь из хэлпера.
-
   nil
   (compile-element [this] this)
 
   Object
   (compile-element [this] this)
+
+  String
+  (compile-element [this]
+    ;; todo: wrap with RawString
+    (reify p/Renderable
+      (render [_ w _]
+        (w/append-raw w this))))
 
   clojure.lang.PersistentVector
   (compile-element [this]

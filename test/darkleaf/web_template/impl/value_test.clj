@@ -150,7 +150,7 @@
 
     (this)
     {:a "value"}
-    "{:a \"value\"}"
+    "{:a &quot;value&quot;}"
 
     (this (this))
     {:a :b}
