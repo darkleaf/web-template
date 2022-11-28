@@ -1,87 +1,88 @@
 (ns darkleaf.web-template.internal.attributes-test
   (:require
    [clojure.test :as t]
-   [darkleaf.web-template.internal.attributes :refer [merge-attrs]]))
+   [darkleaf.web-template.internal.attributes :refer [merge-attrs]]
+   [darkleaf.web-template.protocols :as p]))
 
 (t/deftest merge-attrs-test
-  (t/are [literal attrs ctx result]
-      (t/is (= result (merge-attrs literal (quote attrs) ctx)))
-    nil nil nil
-    nil
+  (let [replace (reify p/AttributeValue
+                  (update-attribute-value [_ _ value]
+                     "replaced"))
+        append  (reify p/AttributeValue
+                  (update-attribute-value [_ _ value]
+                    (str value " " "appended")))
+        delete  (reify p/AttributeValue
+                  (update-attribute-value [_ _ value]
+                    nil))
+        ctx     (reify p/AttributeValue
+                  (update-attribute-value [_ ctx value]
+                    (:foo ctx)))]
+    (t/are [literal attrs ctx result]
+        (t/is (= result (merge-attrs literal attrs ctx)))
+      nil nil nil
+      nil
 
-    {"id" "a", "class" "b c"} nil nil
-    {"id" "a", "class" "b c"}
-
-
-    {"id" "a"} {id b} nil
-    {"id" "b"}
-
-    {"id" "a"} {:id :b} nil
-    {"id" "b"}
-
-    {"id" "a"} {"id" "b"} nil
-    {"id" "b"}
-
-
-    {"class" "a"} {class #{b}} nil
-    {"class" "a b"}
-
-    {"class" "a"} {:class #{:b}} nil
-    {"class" "a b"}
-
-    {"class" "a"} {"class" #{"b"}} nil
-    {"class" "a b"}
+      {"id" "a"} nil nil
+      {"id" "a"}
 
 
-    {"class" "a"} {class #{b} ... (:attrs)} {:attrs {:class "c"}}
-    {"class" "c"}
+      nil {"id" replace} nil
+      {"id" "replaced"}
 
-    {"class" "a"} {class #{b} ... (:attrs)} {:attrs {:class ["c"]}}
-    {"class" "a b c"}
+      nil {:id replace} nil
+      {"id" "replaced"}
 
-    nil {... (:attrs)} {:attrs {:class {:a true, :b false}}}
-    {"class" "a"}
+      nil {'id replace} nil
+      {"id" "replaced"}
 
-
-    {"class" "a"} {class nil} nil
-    {}
-
-
-    {"class" "a"} {class #{b} ... (:attrs)} {:attrs {:class nil}}
-    {}
+      {"id" "a"} {:id replace} nil
+      {"id" "replaced"}
 
 
-    {"class" "a"} {class false} nil
-    {}
+      {"id" "a"} {:id append} nil
+      {"id" "a appended"}
 
-    {"class" "a"} {class #{b} ... (:attrs)} {:attrs {:class false}}
-    {}
+      nil {:id delete} nil
+      nil
 
+      {"id" "a" "class" "b"} {:id delete} nil
+      {"class" "b"}
 
-    nil {attr true} nil
-    {"attr" true}
+      nil {:id ctx} {:foo "a"}
+      {"id" "a"})))
 
-    nil {... (:attrs)} {:attrs {:attr true}}
-    {"attr" true}
+(t/deftest resolve-test
+  (let [stub (reify p/AttributeValue
+               (update-attribute-value [_ _ _]
+                 "stub"))]
+    (t/are [attrs ctx result]
+        (t/is (= result (merge-attrs nil attrs ctx)))
+      '{foo (:foo)} {:foo stub}
+      {"foo" "stub"})))
 
+(t/deftest spread-test
+  (let [stub (reify p/AttributeValue
+               (update-attribute-value [_ _ value]
+                 (str value " " "stub")))]
+    (t/are [attrs ctx result]
+        (t/is (= result (merge-attrs nil attrs ctx)))
+      '{... (:attrs)} {:attrs {:foo stub}}
+      {"foo" " stub"}
 
-    nil {attr 3/4} nil
-    {"attr" "3/4"}
+      {:foo stub, '...  '(:attrs)} {:attrs {:foo stub}}
+      {"foo" " stub stub"}
 
+      {'foo stub, '...  '(:attrs)} {:attrs {:foo stub}}
+      {"foo" " stub stub"})))
 
-    nil {class (:class)} {:class "a"}
-    {"class" "a"}
+(t/deftest namespace-test
+  (let [stub (reify p/AttributeValue
+               (update-attribute-value [_ _ _]
+                 "stub"))]
+    (t/are [attrs result]
+        (t/is (= result (merge-attrs nil attrs nil)))
+      {:foo/bar stub}
+      {"foo:bar" "stub"}
 
-    {"class" "a"} {class (:class)} {:class (list "b")}
-    {"class" "a b"}
-
-
-    nil {(:attr) 42} {:attr "my-attr"}
-    {"my-attr" "42"}
-
-    nil {class {foo (:foo)}} {:foo true}
-    {"class" "foo"}
-
-    ;; todo
-    nil {class {foo (:foo)}} {:foo false}
-    {"class" ""}))
+      {'foo/bar stub}
+      {"foo:bar" "stub"})))
