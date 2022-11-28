@@ -82,8 +82,6 @@
     false
     "blank"))
 
-;; todo? [1 2 3] -> "1, 2, 3"
-
 (t/deftest vector-test
   (test-tmpl
     (this)

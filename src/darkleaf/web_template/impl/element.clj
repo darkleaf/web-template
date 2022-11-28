@@ -39,7 +39,7 @@
         ;; чтобы не мержжить все это в рантайме
          (let [attrs (merge-attrs literal-attrs attrs ctx)]
            (w/append-raw w "<")
-           (w/append w tag)  ;; todo? [(:tag) {} ...]
+           (w/append w tag)
            (doseq [[attr value] attrs]
              (w/append-raw w " ")
              ;; todo: value = true
