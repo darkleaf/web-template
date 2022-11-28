@@ -105,7 +105,7 @@
     nil
     "<div class=\"a b c\"></div>"))
 
-(t/deftest fn-test
+(t/deftest ifn-test
   (test-tmpl
     [div.a {class ~(fn [ctx] (:class ctx))}]
     {:class [:b :c]}

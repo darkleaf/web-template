@@ -19,7 +19,7 @@
 (defn update-attribute-value-ident [patch _ _]
   (name patch))
 
-(defn update-attribute-value-fn [patch ctx value]
+(defn update-attribute-value-ifn [patch ctx value]
   (p/update-attribute-value (patch ctx) ctx value))
 
 (defn update-attribute-value-default [patch _ _]
@@ -36,7 +36,7 @@
       (ident? patch)   (update-attribute-value-ident   patch ctx value)
       (map? patch)     (update-attribute-value-map     patch ctx value)
       (seqable? patch) (update-attribute-value-seqable patch ctx value)
-      (fn? patch)      (update-attribute-value-fn      patch ctx value)
+      (ifn? patch)     (update-attribute-value-ifn     patch ctx value)
       :default         (update-attribute-value-default patch ctx value)))
 
   Boolean
