@@ -9,13 +9,13 @@
 (defmacro chain-handlers
   {:private      true
    :style/indent :defn}
-  [node-binding opts & handlers]
+  [node-binding mode & handlers]
   `(or ~@(for [h handlers]
-           `(~h ~node-binding ~opts))))
+           `(~h ~node-binding ~mode))))
 
-(defn- vector-<>-element [[tag & body :as node] opts]
+(defn- vector-<>-element [[tag & body :as node] mode]
    (when (= '<> tag)
-     (let [body (map #(p/compile-element % opts) body)]
+     (let [body (map #(p/compile-element % mode) body)]
        (reify p/Renderable
          (render [_ w ctx]
            (doseq [item body]
@@ -25,15 +25,31 @@
   (or (ident? tag)
       (string? tag)))
 
+(defn- xml-attribute [w name value]
+  (w/append w name)
+  (w/append-raw w "=\"")
+  (w/append w value)
+  (w/append-raw w "\""))
+
+(defn- empty-attribute [w name]
+  (w/append w name))
+
+(defn- write-attribute [w name value {:keys [empty-attributes]}]
+  (if (true? value)
+    (if empty-attributes
+      (empty-attribute w name)
+      (xml-attribute w name name))
+    (xml-attribute w name value)))
+
 (defn- vector-tag-element [[tag :as node]
-                           {:keys [void-elements] :as opts}]
+                           {:keys [void-elements] :as mode}]
   (when (tag? tag)
     (let [attrs?              (map? (nth node 1 nil))
           attrs               (if attrs? (nth node 1 nil))
           body                (nthnext node (if attrs? 2 1))
           [tag literal-attrs] (parse-tag tag)
           tag                 ^String tag
-          body                (mapv #(p/compile-element % opts) body)]
+          body                (mapv #(p/compile-element % mode) body)]
       (reify p/Renderable
         (render [_ w ctx]
         ;; todo: добавить случай для литеральных атрибутов,
@@ -43,11 +59,7 @@
            (w/append w tag)
            (doseq [[attr value] attrs]
              (w/append-raw w " ")
-             ;; todo: value = true
-             (w/append w attr)
-             (w/append-raw w "=\"")
-             (w/append w (str value))
-             (w/append-raw w "\""))
+             (write-attribute w attr value mode))
            (w/append-raw w ">")
            ;; todo: in compile time
            (when-not (void-elements tag)
@@ -58,9 +70,9 @@
              (w/append w tag)
              (w/append-raw w ">"))))))))
 
-(defn- list-element [[key block inverted-block :as node] opts]
-  (let [block          (-> block          (p/compile-element opts))
-        inverted-block (-> inverted-block (p/compile-element opts))
+(defn- list-element [[key block inverted-block :as node] mode]
+  (let [block          (-> block          (p/compile-element mode))
+        inverted-block (-> inverted-block (p/compile-element mode))
         write-value    (case (count node)
                          1     p/write-value
                          (2 3) #(p/write-value %1 %2 %3 block inverted-block))
@@ -87,13 +99,13 @@
         (w/append-raw w this))))
 
   clojure.lang.PersistentVector
-  (compile-element [this opts]
-    (chain-handlers this opts
+  (compile-element [this mode]
+    (chain-handlers this mode
       vector-<>-element
       vector-tag-element
       #_todo-else))
 
   clojure.lang.PersistentList
-  (compile-element [this opts]
-    (chain-handlers this opts
+  (compile-element [this mode]
+    (chain-handlers this mode
       list-element)))

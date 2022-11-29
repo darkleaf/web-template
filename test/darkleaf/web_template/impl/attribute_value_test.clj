@@ -35,10 +35,9 @@
 
 (t/deftest true-test
   (test-tmpl
-    ;; todo xml, html5
     [div {foo true}]
     nil
-    "<div foo=\"true\"></div>"))
+    "<div foo></div>"))
 
 (t/deftest string-test
   (test-tmpl

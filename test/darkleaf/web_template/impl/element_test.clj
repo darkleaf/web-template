@@ -8,10 +8,12 @@
 
 (defmacro test-tmpl
   {:style/indent :defn}
-  [& body]
-  (when (seq body)
+  [mode & body]
+  (let [[mode body] (if (symbol? mode)
+                      [mode body]
+                      [wt/html5-mode (cons mode body)])]
     `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string (wt/compile dsl#)
+                                  (wt/render-to-string (wt/compile dsl# ~mode)
                                                        data#))
        ~@body)))
 
@@ -169,3 +171,15 @@
     [wbr]
     nil
     "<wbr>"))
+
+(t/deftest empty-attributes-test
+  (test-tmpl
+    [input {disabled true}]
+    nil
+    "<input disabled>"))
+
+(t/deftest xml-attributes-test
+  (test-tmpl wt/xml-mode
+    [input {disabled true}]
+    nil
+    "<input disabled=\"disabled\"></input>"))
