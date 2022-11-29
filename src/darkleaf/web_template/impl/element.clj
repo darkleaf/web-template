@@ -25,7 +25,8 @@
   (or (ident? tag)
       (string? tag)))
 
-(defn- vector-tag-element [[tag :as node] opts]
+(defn- vector-tag-element [[tag :as node]
+                           {:keys [void-elements] :as opts}]
   (when (tag? tag)
     (let [attrs?              (map? (nth node 1 nil))
           attrs               (if attrs? (nth node 1 nil))
@@ -48,13 +49,14 @@
              (w/append w (str value))
              (w/append-raw w "\""))
            (w/append-raw w ">")
+           ;; todo: in compile time
+           (when-not (void-elements tag)
+             (doseq [item body]
+               (p/render item w ctx))
 
-           (doseq [item body]
-             (p/render item w ctx))
-
-           (w/append-raw w "</")
-           (w/append w tag)
-           (w/append-raw w ">")))))))
+             (w/append-raw w "</")
+             (w/append w tag)
+             (w/append-raw w ">"))))))))
 
 (defn- list-element [[key block inverted-block :as node] opts]
   (let [block          (-> block          (p/compile-element opts))

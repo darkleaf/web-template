@@ -10,7 +10,22 @@
    [darkleaf.web-template.writer :as w]))
 
 (def html5-opts
-  {})
+  {:void-elements #{"area"
+                    "base"
+                    "br"
+                    "col"
+                    "command"
+                    "embed"
+                    "hr"
+                    "img"
+                    "input"
+                    "keygen"
+                    "link"
+                    "meta"
+                    "param"
+                    "source"
+                    "track"
+                    "wbr"}})
 
 (defn compile*
   ([form]

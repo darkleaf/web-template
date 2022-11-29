@@ -103,3 +103,69 @@
       ~renderable
       ::data
       "stub")))
+
+(t/deftest void-tags-test
+  (test-tmpl
+    [area]
+    nil
+    "<area>"
+
+    [base]
+    nil
+    "<base>"
+
+    [br]
+    nil
+    "<br>"
+
+    [col]
+    nil
+    "<col>"
+
+    [command]
+    nil
+    "<command>"
+
+    [embed]
+    nil
+    "<embed>"
+
+    [hr]
+    nil
+    "<hr>"
+
+    [img]
+    nil
+    "<img>"
+
+    [input]
+    nil
+    "<input>"
+
+    [keygen]
+    nil
+    "<keygen>"
+
+    [link]
+    nil
+    "<link>"
+
+    [meta]
+    nil
+    "<meta>"
+
+    [param]
+    nil
+    "<param>"
+
+    [source]
+    nil
+    "<source>"
+
+    [track]
+    nil
+    "<track>"
+
+    [wbr]
+    nil
+    "<wbr>"))
