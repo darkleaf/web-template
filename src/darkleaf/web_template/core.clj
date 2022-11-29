@@ -9,8 +9,15 @@
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.writer :as w]))
 
+(def html5-opts
+  {})
+
+(defn compile*
+  ([form]
+   (p/compile-element form html5-opts)))
+
 (defmacro compile [form]
-  `(p/compile-element ~(template-fn form)))
+  `(compile* ~(template-fn form)))
 
 (defn render-to-string [template data]
   (w/write-to-string

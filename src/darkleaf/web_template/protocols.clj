@@ -1,7 +1,7 @@
 (ns darkleaf.web-template.protocols)
 
 (defprotocol Element
-  (compile-element [this]))
+  (compile-element [this opts]))
 
 (defprotocol Renderable
   (render [this writer ctx]))
