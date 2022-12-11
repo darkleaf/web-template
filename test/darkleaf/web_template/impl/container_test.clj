@@ -54,6 +54,20 @@
     ""
     "blank"))
 
+(t/deftest number-test
+  (test-tmpl
+    (this "present" "blank")
+    1
+    "present"
+
+    (this "present" "blank")
+    0
+    "blank"
+
+    (this "present" "blank")
+    0.0
+    "blank"))
+
 (t/deftest boolean-test
   (test-tmpl
     (this)

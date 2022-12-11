@@ -25,8 +25,6 @@
     (render [_ w ctx]
       (p/render block w (ctx/push ctx this)))))
 
-;; todo: numbers. 0 for inverted block
-
 (extend-protocol p/Container
   nil
   (container->renderable [this block inverted-block]
@@ -42,6 +40,14 @@
   String
   (container->renderable [this block inverted-block]
     (if-not (str/blank? this)
+      (reify p/Renderable
+        (render [_ w ctx]
+          (p/render block w (ctx/push ctx this))))
+      inverted-block))
+
+  Number
+  (container->renderable [this block inverted-block]
+    (if-not (zero? this)
       (reify p/Renderable
         (render [_ w ctx]
           (p/render block w (ctx/push ctx this))))
