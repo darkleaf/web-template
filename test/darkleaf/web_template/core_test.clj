@@ -95,7 +95,7 @@
   (test-tmpl
     [.a {class (:class)}]
     {:class "b"}
-    "<div class=\"b\"></div>"
+    "<div class=\"a b\"></div>"
 
     [div {(:attr) "foo"}]
     {:attr "class"}
@@ -105,7 +105,7 @@
          ...   (:attrs)}]
     {:class "b"
      :attrs {"class" "c"}}
-    "<div class=\"c\"></div>"))
+    "<div class=\"a b c\"></div>"))
 
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

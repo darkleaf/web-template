@@ -3,48 +3,47 @@
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]))
 
-(defn update-attribute-value-seqable [patch _ value]
-  (->> patch
-       (cons value)
+(defn attribute-value-seqable [this ctx]
+  (->> this
        (filter some?)
-       (map name)
+       (map #(p/attribute-value % ctx))
        (str/join " ")))
 
-(defn update-attribute-value-map [patch ctx value]
-  (let [patch (->> patch
-                   (filter val)
-                   (map key))]
-    (update-attribute-value-seqable patch ctx value)))
+(defn attribute-value-map [this ctx]
+  (let [this (->> this
+                  (filter val)
+                  (map key))]
+    (attribute-value-seqable this ctx)))
 
-(defn update-attribute-value-ident [patch _ _]
-  (name patch))
+(defn attribute-value-ident [this _]
+  ;; todo? foo/bar -> foo--bar, stimulus
+  (name this))
 
-(defn update-attribute-value-ifn [patch ctx value]
-  (p/update-attribute-value (patch ctx) ctx value))
+(defn attribute-value-ifn [this ctx]
+  (p/attribute-value (this ctx) ctx))
 
-(defn update-attribute-value-default [patch _ _]
-  (str patch))
+(defn attribute-value-default [this _]
+  (str this))
 
 (extend-protocol p/AttributeValue
   nil
-  (update-attribute-value [_ _ _]
+  (attribute-value [_ _]
     nil)
 
   Object
-  (update-attribute-value [patch ctx value]
+  (attribute-value [this ctx]
     (cond
-      (ident? patch)   (update-attribute-value-ident   patch ctx value)
-      (map? patch)     (update-attribute-value-map     patch ctx value)
-      (seqable? patch) (update-attribute-value-seqable patch ctx value)
-      (ifn? patch)     (update-attribute-value-ifn     patch ctx value)
-      :default         (update-attribute-value-default patch ctx value)))
+      (ident? this)   (attribute-value-ident   this ctx)
+      (map? this)     (attribute-value-map     this ctx)
+      (seqable? this) (attribute-value-seqable this ctx)
+      (ifn? this)     (attribute-value-ifn     this ctx)
+      :default        (attribute-value-default this ctx)))
 
   Boolean
-  (update-attribute-value [patch _ _]
-    (if patch
-      true
-      nil))
+  (attribute-value [this _]
+    (when this
+      true))
 
   String
-  (update-attribute-value [patch _ _]
-    patch))
+  (attribute-value [this _]
+    this))

@@ -9,15 +9,9 @@
     (str (namespace k) ":" (name k))
     (name k)))
 
-(defn- update-value-r [ctx acc proto-k patch]
-  (let [k (attr-name proto-k)
-        v (get acc k)]
-    (if-some [v (p/update-attribute-value patch ctx v)]
-      (assoc acc k v)
-      (dissoc acc k))))
-
 (defn- ctx-resolve [ctx node]
   (if (list? node)
+    ;; todo: ctx/get
     (get ctx (first node))
     node))
 
@@ -31,11 +25,24 @@
   (reduce-kv (partial resolve-attr ctx)
              {} attrs))
 
+(defn- normalize-attrs [ctx attrs]
+  (->> attrs
+       (reduce-kv (fn [acc proto-k proto-v]
+                    (let [k (attr-name proto-k)
+                          v (p/attribute-value proto-v ctx)]
+                      (if v
+                        (assoc! acc k v)
+                        acc)))
+                  (transient {}))
+       persistent!))
+
 (defn merge-attrs [literal attrs ctx]
-  (let [attrs          (resolve-attrs ctx attrs)
-        dynamic        (get attrs '...)
-        attrs          (dissoc attrs '...)
-        update-value-r (partial update-value-r ctx)
-        res            (reduce-kv update-value-r literal attrs)
-        res            (reduce-kv update-value-r res dynamic)]
-    res))
+  (let [attrs   (resolve-attrs ctx attrs)
+        dynamic (get attrs '...)
+        attrs   (dissoc attrs '...)
+        attrs   (normalize-attrs ctx attrs)
+        dynamic (normalize-attrs ctx dynamic)]
+    (merge-with #(str %1 " " %2)
+                literal
+                attrs
+                dynamic)))

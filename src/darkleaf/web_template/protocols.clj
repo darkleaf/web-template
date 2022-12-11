@@ -10,5 +10,4 @@
   (container->renderable [this block inverted-block]))
 
 (defprotocol AttributeValue
-  (update-attribute-value [patch ctx value])
-  #_(attribute-value [this ctx]))
+  (attribute-value [this ctx]))

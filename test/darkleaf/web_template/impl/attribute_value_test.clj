@@ -21,7 +21,7 @@
 
     [div#a {id nil}]
     nil
-    "<div></div>"))
+    "<div id=\"a\"></div>"))
 
 (t/deftest false-test
   (test-tmpl
@@ -31,7 +31,7 @@
 
     [div#a {id false}]
     nil
-    "<div></div>"))
+    "<div id=\"a\"></div>"))
 
 (t/deftest true-test
   (test-tmpl
@@ -45,9 +45,9 @@
     nil
     "<div id=\"a\"></div>"
 
-    [div#a {id "b"}]
+    [div.a {class "b"}]
     nil
-    "<div id=\"b\"></div>"))
+    "<div class=\"a b\"></div>"))
 
 (t/deftest object-test
   (let [value (reify Object
@@ -58,9 +58,9 @@
       nil
       "<div id=\"stub\"></div>"
 
-      [div#a {id ~value}]
+      [div.a {class ~value}]
       nil
-      "<div id=\"stub\"></div>")))
+      "<div class=\"a stub\"></div>")))
 
 (t/deftest ident-test
   (test-tmpl
@@ -72,13 +72,13 @@
     nil
     "<div id=\"a\"></div>"
 
-    [div#a {id :b}]
+    [div.a {class :b}]
     nil
-    "<div id=\"b\"></div>"
+    "<div class=\"a b\"></div>"
 
-    [div#a {id b}]
+    [div.a {class b}]
     nil
-    "<div id=\"b\"></div>"))
+    "<div class=\"a b\"></div>"))
 
 (t/deftest map-test
   (test-tmpl
@@ -94,12 +94,20 @@
     nil
     "<div class=\"a\"></div>"
 
+    [div {class {[a b] true d nil}}]
+    nil
+    "<div class=\"a b\"></div>"
+
     [div.a {class {a false b true}}]
     nil
     "<div class=\"a b\"></div>"))
 
 (t/deftest seqable-test
   (test-tmpl
+    [div {class [a b {c true d false}]}]
+    nil
+    "<div class=\"a b c\"></div>"
+
     [div.a {class [b c]}]
     nil
     "<div class=\"a b c\"></div>"))

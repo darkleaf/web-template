@@ -5,55 +5,41 @@
    [darkleaf.web-template.protocols :as p]))
 
 (t/deftest merge-attrs-test
-  (let [replace (reify p/AttributeValue
-                  (update-attribute-value [_ _ value]
-                     "replaced"))
-        append  (reify p/AttributeValue
-                  (update-attribute-value [_ _ value]
-                    (str value " " "appended")))
-        delete  (reify p/AttributeValue
-                  (update-attribute-value [_ _ value]
-                    nil))
+  (let [stub (reify p/AttributeValue
+               (attribute-value [_ _]
+                 "stub"))
         ctx     (reify p/AttributeValue
-                  (update-attribute-value [_ ctx value]
+                  (attribute-value [_ ctx]
                     (:foo ctx)))]
     (t/are [literal attrs ctx result]
         (t/is (= result (merge-attrs literal attrs ctx)))
       nil nil nil
-      nil
+      {}
 
       {"id" "a"} nil nil
       {"id" "a"}
 
 
-      nil {"id" replace} nil
-      {"id" "replaced"}
+      nil {"id" stub} nil
+      {"id" "stub"}
 
-      nil {:id replace} nil
-      {"id" "replaced"}
+      nil {:id stub} nil
+      {"id" "stub"}
 
-      nil {'id replace} nil
-      {"id" "replaced"}
-
-      {"id" "a"} {:id replace} nil
-      {"id" "replaced"}
+      nil {'id stub} nil
+      {"id" "stub"}
 
 
-      {"id" "a"} {:id append} nil
-      {"id" "a appended"}
+      {"attr" "a"} {:attr stub} nil
+      {"attr" "a stub"}
 
-      nil {:id delete} nil
-      nil
-
-      {"id" "a" "class" "b"} {:id delete} nil
-      {"class" "b"}
 
       nil {:id ctx} {:foo "a"}
       {"id" "a"})))
 
 (t/deftest resolve-test
   (let [stub (reify p/AttributeValue
-               (update-attribute-value [_ _ _]
+               (attribute-value [_ _]
                  "stub"))]
     (t/are [attrs ctx result]
         (t/is (= result (merge-attrs nil attrs ctx)))
@@ -62,22 +48,22 @@
 
 (t/deftest spread-test
   (let [stub (reify p/AttributeValue
-               (update-attribute-value [_ _ value]
-                 (str value " " "stub")))]
+               (attribute-value [_ _]
+                 "stub"))]
     (t/are [attrs ctx result]
         (t/is (= result (merge-attrs nil attrs ctx)))
       '{... (:attrs)} {:attrs {:foo stub}}
-      {"foo" " stub"}
+      {"foo" "stub"}
 
       {:foo stub, '...  '(:attrs)} {:attrs {:foo stub}}
-      {"foo" " stub stub"}
+      {"foo" "stub stub"}
 
       {'foo stub, '...  '(:attrs)} {:attrs {:foo stub}}
-      {"foo" " stub stub"})))
+      {"foo" "stub stub"})))
 
 (t/deftest namespace-test
   (let [stub (reify p/AttributeValue
-               (update-attribute-value [_ _ _]
+               (attribute-value [_ _]
                  "stub"))]
     (t/are [attrs result]
         (t/is (= result (merge-attrs nil attrs nil)))
