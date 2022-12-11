@@ -71,7 +71,7 @@
              (w/append-raw w ">"))))))))
 
 (defn- list-element [[key block inverted-block :as node] mode]
-  (let [block          (-> block         (p/element->renderable mode))
+  (let [block          (-> block          (p/element->renderable mode))
         inverted-block (-> inverted-block (p/element->renderable mode))
         to-renderable  (case (count node)
                          1     identity
