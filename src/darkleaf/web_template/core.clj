@@ -2,9 +2,9 @@
   (:refer-clojure :exclude [compile])
   (:require
    darkleaf.web-template.impl.attribute-value
+   darkleaf.web-template.impl.container
    darkleaf.web-template.impl.element
    darkleaf.web-template.impl.renderable
-   darkleaf.web-template.impl.value
    [darkleaf.web-template.internal.backtick :refer [template-fn]]
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.writer :as w]))
@@ -36,7 +36,7 @@
   ([form]
    (compile* form html5-mode))
   ([form mode]
-   (p/compile-element form mode)))
+   (p/element->renderable form mode)))
 
 (defmacro compile
   ([form]

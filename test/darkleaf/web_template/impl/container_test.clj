@@ -1,4 +1,4 @@
-(ns darkleaf.web-template.impl.value-test
+(ns darkleaf.web-template.impl.container-test
   (:require
    [clojure.test :as t]
    [darkleaf.web-template.core :as wt]))
@@ -11,6 +11,8 @@
                                   (wt/render-to-string (wt/compile dsl#)
                                                        data#))
        ~@body)))
+
+;; todo: (this) это не про container
 
 (t/deftest nil-test
   (test-tmpl

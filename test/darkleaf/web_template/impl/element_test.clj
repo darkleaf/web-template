@@ -79,12 +79,14 @@
                 (render [this w ctx]
                   (t/is (= this ctx))
                   (w/append-raw w "stub/3"))
-                wtp/Value
-                (write-value [this w ctx block inverted-block]
-                  (t/is (= this ctx))
-                  (w/append-raw w "stub/5")
-                  (w/append-raw w " ") (wtp/render block w ctx)
-                  (w/append-raw w " ") (wtp/render inverted-block w ctx)))]
+                wtp/Container
+                (container->renderable [this block inverted-block]
+                  (reify wtp/Renderable
+                    (render [_ w ctx]
+                      (t/is (= this ctx))
+                      (w/append-raw w "stub/5")
+                      (w/append-raw w " ") (wtp/render block w ctx)
+                      (w/append-raw w " ") (wtp/render inverted-block w ctx)))))]
     (test-tmpl
       (this)
       value

@@ -15,7 +15,7 @@
 
 (defn- vector-<>-element [[tag & body :as node] mode]
    (when (= '<> tag)
-     (let [body (map #(p/compile-element % mode) body)]
+     (let [body (map #(p/element->renderable % mode) body)]
        (reify p/Renderable
          (render [_ w ctx]
            (doseq [item body]
@@ -49,7 +49,7 @@
           body                (nthnext node (if attrs? 2 1))
           [tag literal-attrs] (parse-tag tag)
           tag                 ^String tag
-          body                (mapv #(p/compile-element % mode) body)]
+          body                (mapv #(p/element->renderable % mode) body)]
       (reify p/Renderable
         (render [_ w ctx]
         ;; todo: добавить случай для литеральных атрибутов,
@@ -71,41 +71,42 @@
              (w/append-raw w ">"))))))))
 
 (defn- list-element [[key block inverted-block :as node] mode]
-  (let [block          (-> block         (p/compile-element mode))
-        inverted-block (-> inverted-block (p/compile-element mode))
-        write-value    (case (count node)
-                         1     p/render
-                         (2 3) #(p/write-value %1 %2 %3 block inverted-block))
+  (let [block          (-> block         (p/element->renderable mode))
+        inverted-block (-> inverted-block (p/element->renderable mode))
+        to-renderable  (case (count node)
+                         1     identity
+                         (2 3) #(p/container->renderable % block inverted-block))
         get-value      (if (= 'this key)
                          #(ctx/this %)
                          #(get % key))]
     (reify p/Renderable
       (render [this w ctx]
-        (let [value (get-value ctx)]
-          (write-value value w ctx))))))
+        (let [value      (get-value ctx)
+              renderable (to-renderable value)]
+          (p/render renderable w ctx))))))
 
 (extend-protocol p/Element
   nil
-  (compile-element [this _] this)
+  (element->renderable [this _] this)
 
   Object
-  (compile-element [this _] this)
+  (element->renderable [this _] this)
 
   String
-  (compile-element [this _]
+  (element->renderable [this _]
     ;; todo: wrap with RawString
     (reify p/Renderable
       (render [_ w _]
         (w/append-raw w this))))
 
   clojure.lang.PersistentVector
-  (compile-element [this mode]
+  (element->renderable [this mode]
     (chain-handlers this mode
       vector-<>-element
       vector-tag-element
       #_todo-else))
 
   clojure.lang.PersistentList
-  (compile-element [this mode]
+  (element->renderable [this mode]
     (chain-handlers this mode
       list-element)))
