@@ -71,10 +71,10 @@
              (w/append-raw w ">"))))))))
 
 (defn- list-element [[key block inverted-block :as node] mode]
-  (let [block          (-> block          (p/compile-element mode))
+  (let [block          (-> block         (p/compile-element mode))
         inverted-block (-> inverted-block (p/compile-element mode))
         write-value    (case (count node)
-                         1     p/write-value
+                         1     p/render
                          (2 3) #(p/write-value %1 %2 %3 block inverted-block))
         get-value      (if (= 'this key)
                          #(ctx/this %)

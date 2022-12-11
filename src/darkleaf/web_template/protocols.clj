@@ -7,9 +7,7 @@
   (render [this writer ctx]))
 
 (defprotocol Value
-  (write-value
-    [this writer ctx]
-    [this writer ctx block inverted-block]))
+  (write-value [this writer ctx block inverted-block]))
 
 (defprotocol AttributeValue
   (update-attribute-value [patch ctx value]))

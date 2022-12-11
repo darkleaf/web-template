@@ -74,10 +74,12 @@
     "foo bar"))
 
 (t/deftest list-test
-  (let [value (reify wtp/Value
-                (write-value [this w ctx]
+  (let [value (reify
+                wtp/Renderable
+                (render [this w ctx]
                   (t/is (= this ctx))
                   (w/append-raw w "stub/3"))
+                wtp/Value
                 (write-value [this w ctx block inverted-block]
                   (t/is (= this ctx))
                   (w/append-raw w "stub/5")
