@@ -6,6 +6,10 @@
 (defn render-fn [this w ctx]
   (p/render (this ctx) w ctx))
 
+(defn render-seqable [this w ctx]
+  (doseq [item this]
+    (p/render item w ctx)))
+
 (defn render-default [this w ctx]
   (w/append w (str this)))
 
@@ -20,5 +24,6 @@
   Object
   (render [this w ctx]
     (cond
-      (fn? this) (render-fn this w ctx)
-      :default   (render-default this w ctx))))
+      (seqable? this) (render-seqable this w ctx)
+      (fn? this)      (render-fn this w ctx)
+      :default        (render-default this w ctx))))

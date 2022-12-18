@@ -29,3 +29,8 @@
   (with-redefs [part "redefined"]
     (t/is (= "redefined"
              (wt/render-to-string #'part nil)))))
+
+(t/deftest seqable-test
+  (let [renderable (interpose ", " [1 2 3])]
+    (t/is (= "1, 2, 3"
+             (wt/render-to-string renderable nil)))))
