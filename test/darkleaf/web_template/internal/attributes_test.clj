@@ -6,11 +6,8 @@
 
 (t/deftest merge-attrs-test
   (let [stub (reify p/AttributeValue
-               (attribute-value [_ _]
-                 "stub"))
-        ctx     (reify p/AttributeValue
-                  (attribute-value [_ ctx]
-                    (:foo ctx)))]
+               (attribute-value [_]
+                 "stub"))]
     (t/are [literal attrs ctx result]
         (t/is (= result (merge-attrs literal attrs ctx)))
       nil nil nil
@@ -31,15 +28,12 @@
 
 
       {"attr" "a"} {:attr stub} nil
-      {"attr" "a stub"}
+      {"attr" "a stub"})))
 
-
-      nil {:id ctx} {:foo "a"}
-      {"id" "a"})))
 
 (t/deftest resolve-test
   (let [stub (reify p/AttributeValue
-               (attribute-value [_ _]
+               (attribute-value [_]
                  "stub"))]
     (t/are [attrs ctx result]
         (t/is (= result (merge-attrs nil attrs ctx)))
@@ -48,7 +42,7 @@
 
 (t/deftest spread-test
   (let [stub (reify p/AttributeValue
-               (attribute-value [_ _]
+               (attribute-value [_]
                  "stub"))]
     (t/are [attrs ctx result]
         (t/is (= result (merge-attrs nil attrs ctx)))
@@ -63,7 +57,7 @@
 
 (t/deftest namespace-test
   (let [stub (reify p/AttributeValue
-               (attribute-value [_ _]
+               (attribute-value [_]
                  "stub"))]
     (t/are [attrs result]
         (t/is (= result (merge-attrs nil attrs nil)))

@@ -25,11 +25,11 @@
   (reduce-kv (partial resolve-attr ctx)
              {} attrs))
 
-(defn- normalize-attrs [ctx attrs]
+(defn- normalize-attrs [attrs]
   (->> attrs
        (reduce-kv (fn [acc proto-k proto-v]
                     (let [k (attr-name proto-k)
-                          v (p/attribute-value proto-v ctx)]
+                          v (p/attribute-value proto-v)]
                       (if v
                         (assoc! acc k v)
                         acc)))
@@ -40,8 +40,8 @@
   (let [attrs   (resolve-attrs ctx attrs)
         dynamic (get attrs '...)
         attrs   (dissoc attrs '...)
-        attrs   (normalize-attrs ctx attrs)
-        dynamic (normalize-attrs ctx dynamic)]
+        attrs   (normalize-attrs attrs)
+        dynamic (normalize-attrs dynamic)]
     (merge-with #(str %1 " " %2)
                 literal
                 attrs

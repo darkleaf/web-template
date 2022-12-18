@@ -10,4 +10,4 @@
   (container->renderable [this block inverted-block]))
 
 (defprotocol AttributeValue
-  (attribute-value [this ctx]))
+  (attribute-value [this]))

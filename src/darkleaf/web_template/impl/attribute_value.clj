@@ -3,47 +3,43 @@
    [clojure.string :as str]
    [darkleaf.web-template.protocols :as p]))
 
-(defn attribute-value-seqable [this ctx]
+(defn attribute-value-seqable [this]
   (->> this
        (filter some?)
-       (map #(p/attribute-value % ctx))
+       (map p/attribute-value)
        (str/join " ")))
 
-(defn attribute-value-map [this ctx]
+(defn attribute-value-map [this]
   (let [this (->> this
                   (filter val)
                   (map key))]
-    (attribute-value-seqable this ctx)))
+    (attribute-value-seqable this)))
 
-(defn attribute-value-ident [this _]
+(defn attribute-value-ident [this]
   ;; todo? foo/bar -> foo--bar, stimulus
   (name this))
 
-(defn attribute-value-ifn [this ctx]
-  (p/attribute-value (this ctx) ctx))
-
-(defn attribute-value-default [this _]
+(defn attribute-value-default [this]
   (str this))
 
 (extend-protocol p/AttributeValue
   nil
-  (attribute-value [_ _]
+  (attribute-value [_]
     nil)
 
   Object
-  (attribute-value [this ctx]
+  (attribute-value [this]
     (cond
-      (ident? this)   (attribute-value-ident   this ctx)
-      (map? this)     (attribute-value-map     this ctx)
-      (seqable? this) (attribute-value-seqable this ctx)
-      (ifn? this)     (attribute-value-ifn     this ctx)
-      :default        (attribute-value-default this ctx)))
+      (ident? this)   (attribute-value-ident   this)
+      (map? this)     (attribute-value-map     this)
+      (seqable? this) (attribute-value-seqable this)
+      :default        (attribute-value-default this)))
 
   Boolean
-  (attribute-value [this _]
+  (attribute-value [this]
     (when this
       true))
 
   String
-  (attribute-value [this _]
+  (attribute-value [this]
     this))

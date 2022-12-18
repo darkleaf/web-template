@@ -143,19 +143,6 @@
       (t/is (= "<div>0.12</div>"
                (wt/render-to-string tmpl data))))))
 
-(t/deftest fn-as-attr-value-test
-  (let [classes (fn [ctx]
-                  (case (-> ctx :user :type)
-                    :admin [:base :admin]
-                    :user  [:base :user]))
-        tmpl    (wt/compile
-                 (:user
-                  [div {class ~classes}
-                   (:name)]))
-        data    {:user {:type :admin
-                        :name "John"}}]
-    (t/is (= "<div class=\"base admin\">John</div>"
-             (wt/render-to-string tmpl data)))))
 
 (comment
  (defn- render [node data]
