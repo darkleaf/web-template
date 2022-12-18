@@ -5,7 +5,6 @@
    darkleaf.web-template.impl.container
    darkleaf.web-template.impl.element
    darkleaf.web-template.impl.renderable
-   [darkleaf.web-template.internal.backtick :refer [template-fn]]
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.writer :as w]))
 
@@ -32,17 +31,11 @@
   {:void-elements    #{}
    :empty-attributes false})
 
-(defn compile*
+(defn compile
   ([form]
-   (compile* form html5-mode))
+   (compile form html5-mode))
   ([form mode]
    (p/element->renderable form mode)))
-
-(defmacro compile
-  ([form]
-   `(compile* ~(template-fn form)))
-  ([form mode]
-   `(compile* ~(template-fn form) ~mode)))
 
 (defn render-to-string [template data]
   (w/write-to-string

@@ -8,7 +8,7 @@
   [& body]
   (when (seq body)
     `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string (wt/compile dsl#)
+                                  (wt/render-to-string (wt/compile (quote dsl#))
                                                        data#))
        ~@body)))
 
@@ -54,12 +54,12 @@
                 (toString [_]
                   "stub"))]
     (test-tmpl
-      [div {id ~value}]
-      nil
+      [div {id (:value)}]
+      {:value value}
       "<div id=\"stub\"></div>"
 
-      [div.a {class ~value}]
-      nil
+      [div.a {class (:value)}]
+      {:value value}
       "<div class=\"a stub\"></div>")))
 
 (t/deftest ident-test

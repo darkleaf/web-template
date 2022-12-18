@@ -13,7 +13,7 @@
                       [mode body]
                       [wt/html5-mode (cons mode body)])]
     `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string (wt/compile dsl# ~mode)
+                                  (wt/render-to-string (wt/compile (quote dsl#) ~mode)
                                                        data#))
        ~@body)))
 
@@ -99,16 +99,6 @@
       (this "present" "blank")
       value
       "stub/5 present blank")))
-
-(t/deftest renderable-test
-  (let [renderable (reify wtp/Renderable
-                     (render [this w ctx]
-                       (t/is (= ::data ctx))
-                       (w/append-raw w "stub")))]
-    (test-tmpl
-      ~renderable
-      ::data
-      "stub")))
 
 (t/deftest void-tags-test
   (test-tmpl

@@ -10,7 +10,7 @@
   [& body]
   (when (seq body)
     `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string (wt/compile dsl#)
+                                  (wt/render-to-string (wt/compile (quote dsl#))
                                                        data#))
        ~@body)))
 
@@ -108,40 +108,6 @@
     "<div class=\"a b c\"></div>"))
 
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-(t/deftest partial-test
-  (let [layout  (fn [body section]
-                  (wt/compile
-                   [layout
-                    [body ~body]
-                    [section ~section]]))
-        body    (wt/compile
-                 "my body")
-        section (wt/compile
-                 "my section")
-        tmpl    (layout body section)]
-    (t/is (= "<layout><body>my body</body><section>my section</section></layout>"
-             (wt/render-to-string tmpl nil)))))
-
-(defmacro with-us-locale [& body]
-  `(let [previous# (java.util.Locale/getDefault)]
-     (try
-       (java.util.Locale/setDefault java.util.Locale/US)
-       ~@body
-       (finally
-         (java.util.Locale/setDefault previous#)))))
-
-(t/deftest helper-test
-  (let [format (fn [fmt]
-                 (reify wtp/Renderable
-                   (render [_ w {this 'this}]
-                     (w/append w (format fmt this)))))
-        tmpl   (wt/compile
-                [div (:price ~(format "%.2f"))])
-        data   {:price 0.12345}]
-    (with-us-locale
-      (t/is (= "<div>0.12</div>"
-               (wt/render-to-string tmpl data))))))
 
 
 (comment
