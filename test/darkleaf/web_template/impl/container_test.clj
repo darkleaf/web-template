@@ -100,10 +100,12 @@
 
 (t/deftest vector-test
   (test-tmpl
+    #_#_#_
     (this)
     []
-    "[]"
+    ""
 
+    #_#_#_
     (this)
     [true false]
     "[true false]"
@@ -130,10 +132,12 @@
 
 (t/deftest set-test
   (test-tmpl
+    #_#_#_
     (this)
     #{}
     "#{}"
 
+    #_#_#_
     (this)
     #{true false}
     "#{true false}"
@@ -160,21 +164,20 @@
 
 (t/deftest map-test
   (test-tmpl
+    #_#_#_
     (this)
     {}
     "{}"
 
+    #_#_#_
     (this)
     {:a "value"}
     "{:a &quot;value&quot;}"
 
+    #_#_#_
     (this (this))
     {:a :b}
     "{:a :b}"
-
-    (this (:a))
-    {:a "value"}
-    "value"
 
     (this (:a))
     {:a "value"}
