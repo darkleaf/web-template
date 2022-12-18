@@ -13,13 +13,6 @@
                        "obj"))]
     (t/is (= "obj" (wt/render-to-string renderable nil)))))
 
-(t/deftest fn-test
-  (let [renderable (fn [ctx]
-                    (t/is (= ::data ctx))
-                    "stub")
-        data  ::data]
-    (t/is (= "stub" (wt/render-to-string renderable data)))))
-
 (def part "part")
 
 (t/deftest var-test

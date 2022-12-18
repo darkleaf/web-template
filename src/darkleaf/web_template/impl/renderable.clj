@@ -3,9 +3,6 @@
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.writer :as w]))
 
-(defn render-fn [this w ctx]
-  (p/render (this ctx) w ctx))
-
 (defn render-seqable [this w ctx]
   (doseq [item this]
     (p/render item w ctx)))
@@ -25,5 +22,4 @@
   (render [this w ctx]
     (cond
       (seqable? this) (render-seqable this w ctx)
-      (fn? this)      (render-fn this w ctx)
       :default        (render-default this w ctx))))
