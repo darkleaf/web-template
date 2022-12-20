@@ -17,186 +17,186 @@
 (t/deftest nil-test
   (test-tmpl
     (this)
-    nil
+    {'this nil}
     ""
 
     (this "present")
-    nil
+    {'this nil}
     ""
 
     (this "present" "blank")
-    nil
+    {'this nil}
     "blank"))
 
 (t/deftest string-test
   (test-tmpl
     (this)
-    "a"
+    {'this "a"}
     "a"
 
     (this (this))
-    "a"
+    {'this "a"}
     "a"
 
     (this "present")
-    "a"
+    {'this "a"}
     "present"
 
     (this "present")
-    ""
+    {'this ""}
     ""
 
     (this "present" "blank")
-    "a"
+    {'this "a"}
     "present"
 
     (this "present" "blank")
-    ""
+    {'this ""}
     "blank"))
 
 (t/deftest number-test
   (test-tmpl
     (this "present" "blank")
-    1
+    {'this 1}
     "present"
 
     (this "present" "blank")
-    0
+    {'this 0}
     "blank"
 
     (this "present" "blank")
-    0.0
+    {'this 0.0}
     "blank"))
 
 (t/deftest boolean-test
   (test-tmpl
     (this)
-    true
+    {'this true}
     "true"
 
     (this)
-    false
+    {'this false}
     "false"
 
     (this (this))
-    true
+    {'this true}
     "true"
 
     (this "present")
-    true
+    {'this true}
     "present"
 
     (this "present")
-    false
+    {'this false}
     ""
 
     (this "present" "blank")
-    true
+    {'this true}
     "present"
 
     (this "present" "blank")
-    false
+    {'this false}
     "blank"))
 
 (t/deftest vector-test
   (test-tmpl
     #_#_#_
     (this)
-    []
+    {'this []}
     ""
 
     #_#_#_
     (this)
-    [true false]
+    {'this [true false]}
     "[true false]"
 
     (this [<> (this) " "])
-    ["a" "b"]
+    {'this ["a" "b"]}
     "a b "
 
     (this "present ")
-    [true false]
+    {'this [true false]}
     "present present "
 
     (this "present ")
-    []
+    {'this []}
     ""
 
     (this "present " "blank")
-    [true false]
+    {'this [true false]}
     "present present "
 
     (this "present " "blank")
-    []
+    {'this []}
     "blank"))
 
 (t/deftest set-test
   (test-tmpl
     #_#_#_
     (this)
-    #{}
+    {'this #{}}
     "#{}"
 
     #_#_#_
     (this)
-    #{true false}
+    {'this #{true false}}
     "#{true false}"
 
     (this [<> (this) " "])
-    #{"a" "b"}
+    {'this #{"a" "b"}}
     "a b "
 
     (this "present ")
-    #{true false}
+    {'this #{true false}}
     "present present "
 
     (this "present ")
-    #{}
+    {'this #{}}
     ""
 
     (this "present " "blank")
-    #{true false}
+    {'this #{true false}}
     "present present "
 
     (this "present " "blank")
-    #{}
+    {'this #{}}
     "blank"))
 
 (t/deftest map-test
   (test-tmpl
     #_#_#_
     (this)
-    {}
+    {'this {}}
     "{}"
 
     #_#_#_
     (this)
-    {:a "value"}
+    {'this {:a "value"}}
     "{:a &quot;value&quot;}"
 
     #_#_#_
     (this (this))
-    {:a :b}
+    {'this {:a :b}}
     "{:a :b}"
 
     (this (:a))
-    {:a "value"}
+    {'this {:a "value"}}
     "value"
 
     (this (:a))
-    {}
+    {'this {}}
     ""
 
     (this "present")
-    {}
+    {'this {}}
     ""
 
     (this "present" "blank")
-    {}
+    {'this {}}
     "blank"
 
     (this "present" "blank")
-    {:a "value"}
+    {'this {:a "value"}}
     "present"))
 
 (t/deftest object-test
@@ -205,17 +205,17 @@
                 "obj"))]
     (test-tmpl
       (this)
-      obj
+      {'this obj}
       "obj"
 
       (this (this))
-      obj
+      {'this obj}
       "obj"
 
       (this "present")
-      obj
+      {'this obj}
       "present"
 
       (this "present" "blank")
-      obj
+      {'this obj}
       "present")))

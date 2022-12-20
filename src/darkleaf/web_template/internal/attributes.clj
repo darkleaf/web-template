@@ -11,7 +11,6 @@
 
 (defn- ctx-resolve [ctx node]
   (if (list? node)
-    ;; todo: ctx/get
     (get ctx (first node))
     node))
 

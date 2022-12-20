@@ -1,6 +1,5 @@
 (ns darkleaf.web-template.impl.element
   (:require
-   [darkleaf.web-template.context :as ctx]
    [darkleaf.web-template.internal.attributes :refer [merge-attrs]]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.protocols :as p]
@@ -75,13 +74,10 @@
         inverted-block (-> inverted-block (p/element->renderable mode))
         to-renderable  (case (count node)
                          1     identity
-                         (2 3) #(p/container->renderable % block inverted-block))
-        get-value      (if (= 'this key)
-                         #(ctx/this %)
-                         #(get % key))]
+                         (2 3) #(p/container->renderable % block inverted-block))]
     (reify p/Renderable
       (render [this w ctx]
-        (let [value      (get-value ctx)
+        (let [value      (get ctx key)
               renderable (to-renderable value)]
           (p/render renderable w ctx))))))
 

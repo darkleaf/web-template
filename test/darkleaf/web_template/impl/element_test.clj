@@ -77,27 +77,27 @@
   (let [value (reify
                 wtp/Renderable
                 (render [this w ctx]
-                  (t/is (= this ctx))
+                  (t/is (= this (ctx 'this)))
                   (w/append-raw w "stub/3"))
                 wtp/Container
                 (container->renderable [this block inverted-block]
                   (reify wtp/Renderable
                     (render [_ w ctx]
-                      (t/is (= this ctx))
+                      (t/is (= this (ctx 'this)))
                       (w/append-raw w "stub/5")
                       (w/append-raw w " ") (wtp/render block w ctx)
                       (w/append-raw w " ") (wtp/render inverted-block w ctx)))))]
     (test-tmpl
       (this)
-      value
+      {'this value}
       "stub/3"
 
       (this "present")
-      value
+      {'this value}
       "stub/5 present "
 
       (this "present" "blank")
-      value
+      {'this value}
       "stub/5 present blank")))
 
 (t/deftest void-tags-test

@@ -1,7 +1,6 @@
 (ns darkleaf.web-template.impl.container
   (:require
    [clojure.string :as str]
-   [darkleaf.web-template.context :as ctx]
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.writer :as w]))
 
@@ -9,7 +8,7 @@
   (if (seq this)
     (reify p/Renderable
       (render [_ w ctx]
-        (p/render block w (ctx/push ctx this))))
+        (p/render block w (merge ctx this {'this this}))))
     inverted-block))
 
 (defn container->renderable-seqable [this block inverted-block]
@@ -17,13 +16,13 @@
     (reify p/Renderable
       (render [_ w ctx]
         (doseq [item this]
-          (p/render block w (ctx/push ctx item)))))
+          (p/render block w (assoc ctx 'this item)))))
     inverted-block))
 
 (defn container->renderable-default [this block inverted-block]
   (reify p/Renderable
     (render [_ w ctx]
-      (p/render block w (ctx/push ctx this)))))
+      (p/render block w (assoc ctx 'this this)))))
 
 (extend-protocol p/Container
   nil
@@ -42,7 +41,7 @@
     (if-not (str/blank? this)
       (reify p/Renderable
         (render [_ w ctx]
-          (p/render block w (ctx/push ctx this))))
+          (p/render block w (assoc ctx 'this this))))
       inverted-block))
 
   Number
@@ -50,7 +49,7 @@
     (if-not (zero? this)
       (reify p/Renderable
         (render [_ w ctx]
-          (p/render block w (ctx/push ctx this))))
+          (p/render block w (assoc ctx 'this this))))
       inverted-block))
 
   Boolean
@@ -58,5 +57,5 @@
     (if this
       (reify p/Renderable
         (render [_ w ctx]
-          (p/render block w (ctx/push ctx this))))
+          (p/render block w (assoc ctx 'this this))))
       inverted-block)))
