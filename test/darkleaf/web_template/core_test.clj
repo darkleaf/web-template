@@ -12,7 +12,7 @@
     `(t/are [dsl# data# html#] (= html#
                                   (wt/render-to-string
                                    (merge data#
-                                          {:template (wt/compile (quote dsl#))})))
+                                          {::wt/renderable (wt/compile (quote dsl#))})))
 
        ~@body)))
 

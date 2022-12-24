@@ -1,7 +1,8 @@
 (ns darkleaf.web-template.impl.renderable
   (:require
    [darkleaf.web-template.protocols :as p]
-   [darkleaf.web-template.writer :as w]))
+   [darkleaf.web-template.writer :as w]
+   [darkleaf.web-template.core :as-alias wt]))
 
 (defn render-seqable [this w ctx]
   (doseq [item this]
@@ -11,12 +12,12 @@
   (w/append w (str this)))
 
 (defn render-map [this w ctx]
-  (if-some [template (:template this)]
+  (if-some [template (::wt/renderable this)]
     (p/render template
               w
               (merge ctx
                      this
-                     {'this (dissoc this :template)}))
+                     {'this (dissoc this ::wt/renderable)}))
     (render-default this w ctx)))
 
 (extend-protocol p/Renderable

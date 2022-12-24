@@ -10,7 +10,7 @@
 (t/deftest ok
   (let [baos (ByteArrayOutputStream.)
         tmpl (wt/compile '(:value))
-        body (sut/body {:value    "ok"
-                        :template tmpl})]
+        body (sut/body {:value          "ok"
+                        ::wt/renderable tmpl})]
     (rp/write-body-to-stream body nil baos)
     (t/is (= "ok" (str baos)))))

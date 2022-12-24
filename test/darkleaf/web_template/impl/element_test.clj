@@ -15,7 +15,7 @@
     `(t/are [dsl# data# html#] (= html#
                                   (wt/render-to-string
                                    (merge data#
-                                          {:template (wt/compile (quote dsl#) ~mode)})))
+                                          {::wt/renderable (wt/compile (quote dsl#) ~mode)})))
        ~@body)))
 
 (t/deftest nil-test
