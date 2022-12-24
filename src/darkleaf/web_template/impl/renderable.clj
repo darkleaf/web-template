@@ -10,6 +10,12 @@
 (defn render-default [this w ctx]
   (w/append w (str this)))
 
+;; todo: add test
+(defn render-map [this w ctx]
+  (if-some [template (:template this)]
+    (p/render template w (merge ctx this {'this this}))
+    (render-default this w ctx)))
+
 (extend-protocol p/Renderable
   nil
   (render [_ _ _])
@@ -21,5 +27,6 @@
   Object
   (render [this w ctx]
     (cond
+      (map? this)     (render-map this w ctx)
       (seqable? this) (render-seqable this w ctx)
       :default        (render-default this w ctx))))
