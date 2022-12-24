@@ -13,15 +13,16 @@
                       [mode body]
                       [wt/html5-mode (cons mode body)])]
     `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string (wt/compile (quote dsl#) ~mode)
-                                                       data#))
+                                  (wt/render-to-string
+                                   (merge data#
+                                          {:template (wt/compile (quote dsl#) ~mode)})))
        ~@body)))
 
 (t/deftest nil-test
-  (test-tmpl
-    nil
-    nil
-    ""))
+  #_(test-tmpl
+      nil
+      nil
+      ""))
 
 (t/deftest literal-string-test
   (test-tmpl
@@ -77,27 +78,25 @@
   (let [value (reify
                 wtp/Renderable
                 (render [this w ctx]
-                  (t/is (= this (ctx 'this)))
                   (w/append-raw w "stub/3"))
                 wtp/Container
                 (container->renderable [this block inverted-block]
                   (reify wtp/Renderable
                     (render [_ w ctx]
-                      (t/is (= this (ctx 'this)))
                       (w/append-raw w "stub/5")
                       (w/append-raw w " ") (wtp/render block w ctx)
                       (w/append-raw w " ") (wtp/render inverted-block w ctx)))))]
     (test-tmpl
-      (this)
-      {'this value}
+      (:value)
+      {:value value}
       "stub/3"
 
-      (this "present")
-      {'this value}
+      (:value "present")
+      {:value value}
       "stub/5 present "
 
-      (this "present" "blank")
-      {'this value}
+      (:value "present" "blank")
+      {:value value}
       "stub/5 present blank")))
 
 (t/deftest void-tags-test

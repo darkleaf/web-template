@@ -8,195 +8,196 @@
   [& body]
   (when (seq body)
     `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string (wt/compile (quote dsl#))
-                                                       data#))
+                                  (wt/render-to-string
+                                   (merge data#
+                                          {:template (wt/compile (quote dsl#))})))
        ~@body)))
 
 ;; todo: (this) это не про container
 
 (t/deftest nil-test
   (test-tmpl
-    (this)
-    {'this nil}
+    (:value)
+    {:value nil}
     ""
 
-    (this "present")
-    {'this nil}
+    (:value "present")
+    {:value nil}
     ""
 
-    (this "present" "blank")
-    {'this nil}
+    (:value "present" "blank")
+    {:value nil}
     "blank"))
 
 (t/deftest string-test
   (test-tmpl
-    (this)
-    {'this "a"}
+    (:value)
+    {:value "a"}
     "a"
 
-    (this (this))
-    {'this "a"}
+    (:value (:value))
+    {:value "a"}
     "a"
 
-    (this "present")
-    {'this "a"}
+    (:value "present")
+    {:value "a"}
     "present"
 
-    (this "present")
-    {'this ""}
+    (:value "present")
+    {:value ""}
     ""
 
-    (this "present" "blank")
-    {'this "a"}
+    (:value "present" "blank")
+    {:value "a"}
     "present"
 
-    (this "present" "blank")
-    {'this ""}
+    (:value "present" "blank")
+    {:value ""}
     "blank"))
 
 (t/deftest number-test
   (test-tmpl
-    (this "present" "blank")
-    {'this 1}
+    (:value "present" "blank")
+    {:value 1}
     "present"
 
-    (this "present" "blank")
-    {'this 0}
+    (:value "present" "blank")
+    {:value 0}
     "blank"
 
-    (this "present" "blank")
-    {'this 0.0}
+    (:value "present" "blank")
+    {:value 0.0}
     "blank"))
 
 (t/deftest boolean-test
   (test-tmpl
-    (this)
-    {'this true}
+    (:value)
+    {:value true}
     "true"
 
-    (this)
-    {'this false}
+    (:value)
+    {:value false}
     "false"
 
-    (this (this))
-    {'this true}
+    (:value (:value))
+    {:value true}
     "true"
 
-    (this "present")
-    {'this true}
+    (:value "present")
+    {:value true}
     "present"
 
-    (this "present")
-    {'this false}
+    (:value "present")
+    {:value false}
     ""
 
-    (this "present" "blank")
-    {'this true}
+    (:value "present" "blank")
+    {:value true}
     "present"
 
-    (this "present" "blank")
-    {'this false}
+    (:value "present" "blank")
+    {:value false}
     "blank"))
 
 (t/deftest vector-test
   (test-tmpl
     #_#_#_
-    (this)
-    {'this []}
+    (:value)
+    {:value []}
     ""
 
     #_#_#_
-    (this)
-    {'this [true false]}
+    (:value)
+    {:value [true false]}
     "[true false]"
 
-    (this [<> (this) " "])
-    {'this ["a" "b"]}
+    (:value [<> (this) " "])
+    {:value ["a" "b"]}
     "a b "
 
-    (this "present ")
-    {'this [true false]}
+    (:value "present ")
+    {:value [true false]}
     "present present "
 
-    (this "present ")
-    {'this []}
+    (:value "present ")
+    {:value []}
     ""
 
-    (this "present " "blank")
-    {'this [true false]}
+    (:value "present " "blank")
+    {:value [true false]}
     "present present "
 
-    (this "present " "blank")
-    {'this []}
+    (:value "present " "blank")
+    {:value []}
     "blank"))
 
 (t/deftest set-test
   (test-tmpl
     #_#_#_
-    (this)
-    {'this #{}}
+    (:value)
+    {:value #{}}
     "#{}"
 
     #_#_#_
-    (this)
-    {'this #{true false}}
+    (:value)
+    {:value #{true false}}
     "#{true false}"
 
-    (this [<> (this) " "])
-    {'this #{"a" "b"}}
+    (:value [<> (this) " "])
+    {:value #{"a" "b"}}
     "a b "
 
-    (this "present ")
-    {'this #{true false}}
+    (:value "present ")
+    {:value #{true false}}
     "present present "
 
-    (this "present ")
-    {'this #{}}
+    (:value "present ")
+    {:value #{}}
     ""
 
-    (this "present " "blank")
-    {'this #{true false}}
+    (:value "present " "blank")
+    {:value #{true false}}
     "present present "
 
-    (this "present " "blank")
-    {'this #{}}
+    (:value "present " "blank")
+    {:value #{}}
     "blank"))
 
 (t/deftest map-test
   (test-tmpl
     #_#_#_
-    (this)
-    {'this {}}
+    (:value)
+    {:value {}}
     "{}"
 
     #_#_#_
-    (this)
-    {'this {:a "value"}}
+    (:value)
+    {:value {:a "value"}}
     "{:a &quot;value&quot;}"
 
     #_#_#_
-    (this (this))
-    {'this {:a :b}}
+    (:value (this))
+    {:value {:a :b}}
     "{:a :b}"
 
-    (this (:a))
-    {'this {:a "value"}}
+    (:value (:a))
+    {:value {:a "value"}}
     "value"
 
-    (this (:a))
-    {'this {}}
+    (:value (:a))
+    {:value {}}
     ""
 
-    (this "present")
-    {'this {}}
+    (:value "present")
+    {:value {}}
     ""
 
-    (this "present" "blank")
-    {'this {}}
+    (:value "present" "blank")
+    {:value {}}
     "blank"
 
-    (this "present" "blank")
-    {'this {:a "value"}}
+    (:value "present" "blank")
+    {:value {:a "value"}}
     "present"))
 
 (t/deftest object-test
@@ -204,18 +205,18 @@
               (toString [_]
                 "obj"))]
     (test-tmpl
-      (this)
-      {'this obj}
+      (:value)
+      {:value obj}
       "obj"
 
-      (this (this))
-      {'this obj}
+      (:value (:value))
+      {:value obj}
       "obj"
 
-      (this "present")
-      {'this obj}
+      (:value "present")
+      {:value obj}
       "present"
 
-      (this "present" "blank")
-      {'this obj}
+      (:value "present" "blank")
+      {:value obj}
       "present")))

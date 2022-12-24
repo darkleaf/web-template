@@ -7,11 +7,11 @@
 
 (set! *warn-on-reflection* true)
 
-(defn body [template data]
+(defn body [renderable]
   (reify rp/StreamableResponseBody
     (write-body-to-stream [_ _ os]
       (with-open [os  ^OutputStream os
                   osw (OutputStreamWriter. os)]
-        (wtp/render template osw data)))))
+        (wtp/render renderable osw nil)))))
 
 ;; todo? BufferedWriter(new OutputStreamWriter(out))

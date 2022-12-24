@@ -37,6 +37,6 @@
   ([form mode]
    (p/element->renderable form mode)))
 
-(defn render-to-string [template data]
+(defn render-to-string [renderable]
   (w/write-to-string
-   #(p/render template % data)))
+   #(p/render renderable % nil)))

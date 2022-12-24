@@ -8,8 +8,10 @@
   [& body]
   (when (seq body)
     `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string (wt/compile (quote dsl#))
-                                                       data#))
+                                  (wt/render-to-string
+                                   (merge data#
+                                          {:template (wt/compile (quote dsl#))})))
+
        ~@body)))
 
 

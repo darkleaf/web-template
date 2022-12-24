@@ -10,10 +10,13 @@
 (defn render-default [this w ctx]
   (w/append w (str this)))
 
-;; todo: add test
 (defn render-map [this w ctx]
   (if-some [template (:template this)]
-    (p/render template w (merge ctx this {'this this}))
+    (p/render template
+              w
+              (merge ctx
+                     this
+                     {'this (dissoc this :template)}))
     (render-default this w ctx)))
 
 (extend-protocol p/Renderable
