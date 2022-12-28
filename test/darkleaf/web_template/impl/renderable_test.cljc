@@ -15,6 +15,8 @@
 
 (def part "part")
 
+;; TODO: Fix this test
+;; #object[RangeError RangeError: Maximum call stack size exceeded]
 (t/deftest var-test
   (do
     (t/is (= "part"
@@ -23,6 +25,8 @@
     (t/is (= "redefined"
              (wt/render-to-string #'part)))))
 
+;; TODO: Fix this test
+;; #object[RangeError RangeError: Maximum call stack size exceeded]
 (t/deftest seqable-test
   (let [renderable (interpose ", " [1 2 3])]
     (t/is (= "1, 2, 3"

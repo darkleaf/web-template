@@ -3,7 +3,8 @@
    [darkleaf.web-template.internal.attributes :refer [merge-attrs]]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.protocols :as p]
-   [darkleaf.web-template.writer :as w]))
+   [darkleaf.web-template.writer :as w])
+  #?(:cljs (:require-macros [darkleaf.web-template.impl.element :refer [chain-handlers]])))
 
 (defmacro chain-handlers
   {:private      true
@@ -81,28 +82,34 @@
               renderable (to-renderable value)]
           (p/render renderable w ctx))))))
 
+
+(defn- element->renderable-vector [this mode]
+  (chain-handlers this mode
+    vector-<>-element
+    vector-tag-element
+    #_todo-else))
+
+(defn- element->renderable-list [this mode]
+  (chain-handlers this mode
+    list-element))
+
+(defn- element->renderable-default [this mode]
+  this)
+
 (extend-protocol p/Element
   nil
   (element->renderable [this _] this)
 
-  Object
-  (element->renderable [this _] this)
+  #?(:clj Object :cljs default)
+  (element->renderable [this mode]
+    (cond
+      (vector? this) (element->renderable-vector this mode)
+      (list? this)   (element->renderable-list this mode)
+      :default       (element->renderable-default this mode)))
 
-  String
+  #?(:clj String :cljs string)
   (element->renderable [this _]
     ;; todo: wrap with RawString
     (reify p/Renderable
       (render [_ w _]
-        (w/append-raw w this))))
-
-  clojure.lang.PersistentVector
-  (element->renderable [this mode]
-    (chain-handlers this mode
-      vector-<>-element
-      vector-tag-element
-      #_todo-else))
-
-  clojure.lang.PersistentList
-  (element->renderable [this mode]
-    (chain-handlers this mode
-      list-element)))
+        (w/append-raw w this)))))

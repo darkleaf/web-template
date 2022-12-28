@@ -2,7 +2,8 @@
   (:require
    [darkleaf.web-template.protocols :as p]
    [darkleaf.web-template.writer :as w]
-   [darkleaf.web-template.core :as-alias wt]))
+   [darkleaf.web-template.core :as-alias wt])
+  #?(:clj (:import (clojure.lang Var))))
 
 (defn render-seqable [this w ctx]
   (doseq [item this]
@@ -24,11 +25,11 @@
   nil
   (render [_ _ _])
 
-  clojure.lang.Var
+  Var
   (render [this w ctx]
     (p/render @this w ctx))
 
-  Object
+  #?(:clj Object, :cljs default)
   (render [this w ctx]
     (cond
       (map? this)     (render-map this w ctx)

@@ -29,14 +29,14 @@
   (container->renderable [this block inverted-block]
     inverted-block)
 
-  Object
+  #?(:clj Object :cljs default)
   (container->renderable [this b ib]
     (cond
       (map? this)     (container->renderable-map     this b ib)
       (seqable? this) (container->renderable-seqable this b ib)
       :default        (container->renderable-default this b ib)))
 
-  String
+  #?(:clj String :cljs string)
   (container->renderable [this block inverted-block]
     (if-not (str/blank? this)
       (reify p/Renderable
@@ -44,7 +44,7 @@
           (p/render block w (assoc ctx 'this this))))
       inverted-block))
 
-  Number
+  #?(:clj Number :cljs number)
   (container->renderable [this block inverted-block]
     (if-not (zero? this)
       (reify p/Renderable
@@ -52,7 +52,7 @@
           (p/render block w (assoc ctx 'this this))))
       inverted-block))
 
-  Boolean
+  #?(:clj Boolean :cljs boolean)
   (container->renderable [this block inverted-block]
     (if this
       (reify p/Renderable
