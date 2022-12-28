@@ -3,5 +3,4 @@
                   :extra-deps  {ring/ring-core {:mvn/version "1.9.6"}
                                 io.github.cognitect-labs/test-runner
                                 {:git/tag "v0.5.0" :git/sha "b3fd0d2"}}}
-           :test {:main-opts ["-m" "cognitect.test-runner"]
-                  :exec-fn   cognitect.test-runner.api/test}}}
+           :test {:exec-fn cognitect.test-runner.api/test}}}
