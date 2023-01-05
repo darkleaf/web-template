@@ -120,7 +120,12 @@
 
     (:value "present " "blank")
     {:value []}
-    "blank"))
+    "blank"
+
+    (:items (:name))
+    {:items [{:name "a"} {:name "b"}]}
+    "ab"))
+
 
 (t/deftest set-test
   (test-tmpl

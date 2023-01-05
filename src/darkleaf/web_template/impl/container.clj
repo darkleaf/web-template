@@ -16,7 +16,9 @@
     (reify p/Renderable
       (render [_ w ctx]
         (doseq [item this]
-          (p/render block w (assoc ctx 'this item)))))
+          (p/render block w (merge ctx
+                                   (when (map? item) item)
+                                   {'this item})))))
     inverted-block))
 
 (defn container->renderable-default [this block inverted-block]
