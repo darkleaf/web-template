@@ -27,7 +27,7 @@
   (attribute-value [_]
     nil)
 
-  Object
+  #?(:clj Object :cljs default)
   (attribute-value [this]
     (cond
       (ident? this)   (attribute-value-ident   this)
@@ -35,11 +35,11 @@
       (seqable? this) (attribute-value-seqable this)
       :default        (attribute-value-default this)))
 
-  Boolean
+  #?(:clj Boolean :cljs boolean)
   (attribute-value [this]
     (when this
       true))
 
-  String
+  #?(:clj String :cljs string)
   (attribute-value [this]
     this))

@@ -29,7 +29,7 @@
   (render [this w ctx]
     (p/render @this w ctx))
 
-  Object
+  #?(:clj Object :cljs default)
   (render [this w ctx]
     (cond
       (map? this)     (render-map this w ctx)

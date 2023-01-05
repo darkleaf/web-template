@@ -18,3 +18,4 @@ jobs:
           key: test-${{ hashFiles('deps.edn') }}
           restore-keys: test-
       - run: clojure -X:dev:test
+      - run: clojure -M:dev:cljs-test
