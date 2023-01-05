@@ -24,6 +24,7 @@
   nil
   (render [_ _ _])
 
+  #_#_
   clojure.lang.Var
   (render [this w ctx]
     (p/render @this w ctx))

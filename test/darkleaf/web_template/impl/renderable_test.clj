@@ -13,8 +13,8 @@
                        "obj"))]
     (t/is (= "obj" (wt/render-to-string renderable)))))
 
+#_#_
 (def part "part")
-
 (t/deftest var-test
   (do
     (t/is (= "part"
