@@ -3,7 +3,8 @@
    [darkleaf.web-template.internal.attributes :refer [merge-attrs]]
    [darkleaf.web-template.internal.tag :refer [parse-tag]]
    [darkleaf.web-template.protocols :as p]
-   [darkleaf.web-template.writer :as w]))
+   [darkleaf.web-template.writer :as w])
+  #?(:cljs (:require-macros [darkleaf.web-template.impl.element :refer [chain-handlers]])))
 
 (defmacro chain-handlers
   {:private      true
@@ -85,24 +86,24 @@
   nil
   (element->renderable [this _] this)
 
-  Object
+  #?(:clj Object :cljs default)
   (element->renderable [this _] this)
 
-  String
+  #?(:clj String :cljs string)
   (element->renderable [this _]
     ;; todo: wrap with RawString
     (reify p/Renderable
       (render [_ w _]
         (w/append-raw w this))))
 
-  clojure.lang.PersistentVector
+  #?(:clj clojure.lang.PersistentVector :cljs PersistentVector)
   (element->renderable [this mode]
     (chain-handlers this mode
       vector-<>-element
       vector-tag-element
       #_todo-else))
 
-  clojure.lang.PersistentList
+  #?(:clj clojure.lang.PersistentList :cljs List)
   (element->renderable [this mode]
     (chain-handlers this mode
       list-element)))

@@ -7,11 +7,12 @@
    [darkleaf.web-template.writer :as w]
    [darkleaf.web-template.test-util :refer [test-tmpl]]))
 
+#_
 (t/deftest nil-test
-  #_(test-tmpl
-      nil
-      nil
-      ""))
+  (test-tmpl
+    nil
+    nil
+    ""))
 
 (t/deftest literal-string-test
   (test-tmpl
