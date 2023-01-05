@@ -3,21 +3,8 @@
    [clojure.test :as t]
    [darkleaf.web-template.core :as wt]
    [darkleaf.web-template.protocols :as wtp]
-   [darkleaf.web-template.writer :as w]))
-
-(defmacro test-tmpl
-  {:style/indent :defn}
-  [& body]
-  (when (seq body)
-    `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string
-                                   (merge data#
-                                          {::wt/renderable (wt/compile (quote dsl#))})))
-
-       ~@body)))
-
-
-
+   [darkleaf.web-template.writer :as w]
+   [darkleaf.web-template.test-util :refer [test-tmpl]]))
 
 (t/deftest body-test
   (test-tmpl

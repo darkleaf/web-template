@@ -4,19 +4,8 @@
    [clojure.test :as t]
    [darkleaf.web-template.protocols :as wtp]
    [darkleaf.web-template.protocols :as p]
-   [darkleaf.web-template.writer :as w]))
-
-(defmacro test-tmpl
-  {:style/indent :defn}
-  [mode & body]
-  (let [[mode body] (if (symbol? mode)
-                      [mode body]
-                      [wt/html5-mode (cons mode body)])]
-    `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string
-                                   (merge data#
-                                          {::wt/renderable (wt/compile (quote dsl#) ~mode)})))
-       ~@body)))
+   [darkleaf.web-template.writer :as w]
+   [darkleaf.web-template.test-util :refer [test-tmpl]]))
 
 (t/deftest nil-test
   #_(test-tmpl

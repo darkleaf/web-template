@@ -1,19 +1,8 @@
 (ns darkleaf.web-template.impl.attribute-value-test
   (:require
+   [clojure.test :as t]
    [darkleaf.web-template.core :as wt]
-   [clojure.test :as t]))
-
-(defmacro test-tmpl
-  {:style/indent :defn}
-  [& body]
-  (when (seq body)
-    `(t/are [dsl# data# html#] (= html#
-                                  (wt/render-to-string
-                                   (merge data#
-                                          {::wt/renderable (wt/compile (quote dsl#))})))
-
-       ~@body)))
-
+   [darkleaf.web-template.test-util :refer [test-tmpl]]))
 
 (t/deftest nil-test
   (test-tmpl
