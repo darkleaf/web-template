@@ -54,6 +54,12 @@
      :name           "Jane"}
     wt/render-to-string clerk/html)
 
+;; ### 🦺 Safe by default
+
+(-> {::wt/renderable user-greeting
+     :name           "<strong>Jane</strong>"}
+    wt/render-to-string clerk/html)
+
 ;; ### 🤷‍♂️ Value substitutin with default
 (def user-greeting-2
   (wt/compile
