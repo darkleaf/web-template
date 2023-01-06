@@ -1,12 +1,6 @@
 ;; # Web template
 ;; Logic-less templates for Clojure.
 
-(ns notebooks.readme
-  {:nextjournal.clerk/toc true}
-  (:require
-   [darkleaf.web-template.core :as wt]
-   [nextjournal.clerk :as clerk]))
-
 ;; ## 🚦 Status
 ;; Beta.
 ;; Feature researh has been completed.
@@ -31,6 +25,12 @@
 ;; + `(:key)` like `{{ key }}`
 ;; + `(:key 👍)` like `{{key}}👍{{/key}}`.
 ;; + `(:key 👍 👎)` like `{{key}}👍{{/key}}{{^key}}👎{{/key}}`.
+
+(ns notebooks.readme
+  {:nextjournal.clerk/toc true}
+  (:require
+   [darkleaf.web-template.core :as wt]
+   [nextjournal.clerk :as clerk]))
 
 ;; ### 🗿 Static template
 
