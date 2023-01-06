@@ -30,7 +30,8 @@
   {:nextjournal.clerk/toc true}
   (:require
    [darkleaf.web-template.core :as wt]
-   [nextjournal.clerk :as clerk]))
+   [nextjournal.clerk :as clerk]
+   [clojure.edn :as edn]))
 
 ;; ### 🗿 Static template
 
@@ -150,6 +151,10 @@
      :class {:a true :b false}}
     wt/render-to-string)
 
+(-> {::wt/renderable (wt/compile
+                      '[div {... (:attrs)} 42])
+     :attrs {:class {:a true :b false}}}
+    wt/render-to-string)
 
 ;; ### `<>` tag
 
@@ -180,3 +185,21 @@
 
 (-> '[input {required true}]
     (wt/compile wt/xml-mode) wt/render-to-string)
+
+;; ### 🦸‍♂️ EDN for template and data
+
+(let [tmpl "[div \"Hello \" (:name)]"
+      data "{:name \"John\"}"
+      tmpl (-> tmpl edn/read-string wt/compile)
+      data (-> data edn/read-string)]
+  (-> data
+      (assoc ::wt/renderable tmpl)
+      (wt/render-to-string)))
+
+;; ## API
+
+;;; ### `wt/compile`
+(-> #'wt/compile meta :arglists)
+(-> #'wt/compile meta :doc #_clerk/md)
+
+;;; todo: ring body
