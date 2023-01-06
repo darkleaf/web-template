@@ -67,6 +67,25 @@
      :name           ""}
     wt/render-to-string clerk/html)
 
+;; ### 📦 Containers
+
+(def containers
+  (wt/compile
+   '[ul
+     (:items
+      [li (:title) ": " (:value (this) "🤷‍♀️")])]))
+
+(-> {::wt/renderable containers
+     :items          [{:title "nil" :value nil}
+                      {:title "not zero" :value 1}
+                      {:title "zero" :value 0}
+                      {:title "present string" :value "123"}
+                      {:title "blank string" :value ""}
+                      {:title "empty coll" :value []}
+                      {:title "coll" :value (interpose ", " [1 2 3])}
+                      {:title "template" :value (wt/compile '[strong "template"])}]}
+    wt/render-to-string clerk/html)
+
 ;; ### Presenter
 
 {::clerk/visibility {:result :hide}}
@@ -102,5 +121,56 @@
 
 {::clerk/visibility {:result :show}}
 (-> (table-presenter users)
-    (wt/render-to-string)
-    (clerk/html))
+    wt/render-to-string clerk/html)
+
+;; ### Attributes
+
+(-> '[div.a {class b}]
+    wt/compile wt/render-to-string)
+
+(-> '[div.a {class [b c]}]
+    wt/compile wt/render-to-string)
+
+(-> '[div.a {class {b true c false}}]
+    wt/compile wt/render-to-string)
+
+(-> {::wt/renderable (wt/compile
+                      '[div {class (:class)} 42])
+     :class "a"}
+    wt/render-to-string)
+
+(-> {::wt/renderable (wt/compile
+                      '[div {class (:class)} 42])
+     :class {:a true :b false}}
+    wt/render-to-string)
+
+
+;; ### `<>` tag
+
+(-> '[<>
+      "<!-- comment -->"
+      [.foo 🧜‍♂️]
+      [.bar 🧜‍♀️]]
+    wt/compile wt/render-to-string)
+
+;; ### Namespaces
+
+(-> '[html/div.foo "🥷"]
+    wt/compile wt/render-to-string)
+
+(-> '["html:div" "🥷"]
+    wt/compile wt/render-to-string)
+
+;; ### HTML5 vs XML
+
+(-> '[img {src "https://placekitten.com/200/200"}]
+    (wt/compile) wt/render-to-string)
+
+(-> '[img {src "https://placekitten.com/200/200"}]
+    (wt/compile wt/xml-mode) wt/render-to-string)
+
+(-> '[input {required true}]
+    wt/compile wt/render-to-string)
+
+(-> '[input {required true}]
+    (wt/compile wt/xml-mode) wt/render-to-string)
