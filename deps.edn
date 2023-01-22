@@ -2,8 +2,9 @@
  :aliases {:dev  {:extra-paths ["dev" "test" "notebooks"]
                   :extra-deps  {ring/ring-core                       {:mvn/version "1.9.6"}
                                 io.github.cognitect-labs/test-runner {:git/tag "v0.5.0" :git/sha "b3fd0d2"}
-                                io.github.nextjournal/clerk          {:mvn/version "0.12.707"}}}
+                                io.github.nextjournal/clerk          {:mvn/version "0.12.707"}
+                                criterium/criterium                  {:mvn/version "0.4.6"}}}
            :test {:exec-fn cognitect.test-runner.api/test}
            :doc  {:exec-fn   nextjournal.clerk/build!
-                  :exec-args {:paths ["notebooks/readme.clj"]
+                  :exec-args {:paths    ["notebooks/readme.clj"]
                               :out-path "public"}}}}
